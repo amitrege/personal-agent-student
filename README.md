@@ -1,5 +1,15 @@
 # Personal Scheduling Agent — Course Project
 
+> **⚠️ Do not clone this repo directly.**
+>
+> **Accept the assignment first: https://classroom.github.com/a/weesnfjF**
+>
+> That link creates your own private copy of the repo where your work is saved and graded. If you clone this repo instead, your submissions will not be received and you will not get a grade.
+>
+> **Already cloned and started working?** Accept the invite link above, then copy your changed files (`student_scaffold/`, `student_scaffold_stage2/`, `student_scaffold_stage3/`, `training_data/`, `stage3_artifacts/`) into your new classroom repo.
+
+---
+
 You are building a personalized scheduling assistant that reads notes and emails, creates calendar events, and remembers each user's scheduling preferences. The loop you build — ask a model what to do next, run the requested tool, feed the result back, repeat — is the foundational pattern for agentic AI systems.
 
 ---
