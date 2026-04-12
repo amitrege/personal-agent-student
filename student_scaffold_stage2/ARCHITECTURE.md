@@ -2,33 +2,17 @@
 
 ---
 
-## What You Will Learn in Stage 2
+## Stage 2
 
-By the end of Stage 2 you will understand:
-- How to add **persistent memory** to a stateless agent so preferences survive across sessions
-- Why **deterministic Python code** is used to enforce constraints that a stochastic model cannot reliably enforce alone
-- How a working AI system often combines three kinds of components: a model that reasons, classical code that enforces hard constraints, and a learned component that improves with data (Stage 3 adds the third)
-- The design tradeoffs in memory schemas: what to store, when to write, and how to resolve conflicts
+Stage 2 adds persistent memory to the stateless agent from Stage 1. The central design decision is that **deterministic Python code, not prompt rules, enforces the scheduling constraint** — a pattern that runs throughout the rest of the course.
 
----
-
-## How to Use This Document
-
-You do not need to read this end-to-end before writing code.
-
-**Before mini-stage 0:** Read "You Can Already Schedule a Meeting" and "What the Problem Is" and "The Memory API" (~5 min).
-
-**While working through mini-stages 1–4:** Use the relevant section as a reference — the call signatures and memory object shape are all here.
-
-**Before agent.py:** Read "Where Memory Fits In The Loop" and "The One Rule About Memory".
-
-Everything else is reference — skip it and come back when you need it.
+**Reading order:** Run mini-stage 0 first (see MILESTONES.md), then read "You Can Already Schedule a Meeting", "What the Problem Is", and "The Memory API" (~5 min) before mini-stage 1. Before writing `agent.py`, read "Where Memory Fits In The Loop" and "The One Rule About Memory".
 
 ---
 
 ## The Architecture of This System
 
-Before looking at the Stage-2 problem, it is worth naming the structure of the system you are building across all three stages:
+The system you are building across all three stages has this structure:
 
 ```text
 ┌─────────────────────────────────────────────────────────┐
@@ -44,8 +28,6 @@ Before looking at the Stage-2 problem, it is worth naming the structure of the s
 ```
 
 Stage 1 built the first layer. Stage 2 builds the second layer's memory system. Stage 3 replaces a hand-written rule in the second layer with a trained classifier from the third layer.
-
-The key design principle of Stage 2 is that **deterministic code, not prompt rules, enforces the scheduling constraint**. You will see why as you work through the memory interceptor. It is the most important design idea in this stage.
 
 ---
 
@@ -182,8 +164,6 @@ You could instead add a system prompt rule like: `"If the user prefers afternoon
 
 There is a second reason. The slot must come from the list `calendar.find_free_slots` returned for this session. Your Python code already has that list. The model does not — it would have to re-reason about which slots are available. By intercepting in Python, you guarantee you never pass a slot that was not confirmed free.
 
-This is one specific design. It has its own tradeoffs. You will examine them in the Stage-2 Reflection.
-
 ---
 
 ## Where Memory Fits In The Loop
@@ -206,11 +186,11 @@ Reads the list returned by `search_memory` and returns the most recent valid pre
 
 The memories list is ordered oldest-first. `latest_time_window` reads it in reverse and returns the first valid value it finds. This assumes the user's most recent stated preference is the most accurate one — a reasonable default.
 
-It is not the only possible policy. You might instead trust the highest-confidence write, or require two consistent writes before acting on a preference. Each choice is a tradeoff between stability (acting on sparse signals) and responsiveness (updating quickly when preferences change). You will examine this in the Stage-2 Reflection.
+It is not the only possible policy. You might instead trust the highest-confidence write, or require two consistent writes before acting on a preference. Each choice trades stability (resisting sparse or noisy signals) against responsiveness (updating quickly when preferences change).
 
 **Where to add things in your agent:**
 
-At a high level, the Stage-2 agent is your Stage-1 agent with three additions:
+The Stage-2 agent is your Stage-1 agent with three additions:
 
 - **Before the tool loop:** detect a preference in the user message; if found, write it to memory. Then search memory for any stored preference for this user.
 - **Inside the tool loop:** when the model requests `calendar.create_event`, check whether memory has an active preference. If so, use `choose_preferred_slot` to pick the best available slot and override `start_time`.
@@ -259,13 +239,13 @@ You do not need to implement these modes — the runtime handles them. Write you
 
 ## Design Extensions (Optional)
 
-The required Stage-2 implementation supports one preference type with a fixed conflict resolution strategy. These extensions are not part of the Stage-2 grade, but they are useful preparation for the social arena extra credit, where richer memory and conflict handling can improve the leaderboard score.
+These extensions are not part of the Stage-2 grade, but they're useful preparation for the social arena, where richer memory and conflict handling improve the leaderboard score.
 
-**1. Additional preference types.** The memory system supports any key. What if users also express preferences about meeting length ("I like to keep meetings under 30 minutes") or day of week ("I try to keep Fridays light")? You could add a second memory write/read for `"preferred_duration"` or `"preferred_day"` and pass the result to slot selection. How would you update `choose_preferred_slot` to handle both dimensions at once?
+**1. Additional preference types.** The memory system supports any key. Could you add a second dimension — `"preferred_duration"` for users who say "I like to keep meetings short", or `"preferred_day"` for "I try to keep Fridays light"? How would `choose_preferred_slot` need to change to handle both dimensions at once?
 
-**2. Conflict resolution alternatives.** `latest_time_window` always trusts the most recent write. What if instead you only acted on a preference after it appeared in two or more sessions (stability check)? Or weighted entries by confidence (the Stage-3 classifier produces a non-1.0 confidence that could feed into this)? Implement an alternative to `latest_time_window` and compare its behavior on the visible eval. A stronger version of this idea is especially useful in the social arena, where users may give temporary overrides or change their minds.
+**2. Conflict resolution alternatives.** `latest_time_window` trusts the most recent write. When does that go wrong — for example, if a user gives a one-off override that shouldn't override their standing preference? Could you write a version that only acts on a preference after it appears in at least two sessions? How would that affect responsiveness when a user genuinely changes their preference?
 
-**3. Implicit preference signals.** The current design only reads `session.user_message`. But preferences might also appear implicitly: if a user picks the afternoon slot every time even without stating a preference, that pattern might be worth capturing. How would you detect and store an implicit preference from the slot-selection history?
+**3. Implicit preference signals.** The current design only looks at `session.user_message`. But preferences can show up elsewhere: if a user consistently picks the afternoon slot without saying so explicitly, is that worth capturing? How would you detect and store a preference from the slot-selection history rather than from text?
 
 ---
 

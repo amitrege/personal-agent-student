@@ -2,28 +2,15 @@
 
 ---
 
-## What You Will Learn in Stage 3
+## What Stage 3 Adds
 
-By the end of Stage 3 you will understand:
-- How to design, train, and evaluate a **text classifier** for a specific NLP task
-- Why **training data quality and diversity** matter more than algorithm choice for small-data settings
-- How to use a **confidence threshold** to trade off precision vs. recall in a learned component
-- How to integrate a trained model as a **drop-in replacement** for a hand-written rule inside a larger system
-- The practical tradeoffs between a local trained classifier and using the LLM directly for classification
+Stage 3 replaces the Stage-2 keyword rule with a trained text classifier that predicts scheduling preference from free-form user messages. The core challenge is building a classifier that generalizes — one that handles phrasings it has never seen, not one that memorizes the visible diagnostic set.
 
 ---
 
 ## How to Use This Document
 
-You do not need to read this end-to-end before writing code.
-
-**Before mini-stage 0:** Read "You Can Already Personalize With Rules" and "What the Rule Gets Wrong" (~3 min).
-
-**Before building your classifier:** Read "Your Task: Build a Preference Classifier", "Why Not Just Ask the LLM?", and "Training Data Strategy" (~8 min).
-
-**Before agent.py:** Read "Where Learning Fits In The Agent" and return to "The Confidence Field" when choosing your threshold.
-
-Everything else is reference.
+Run mini-stage 0 first (see MILESTONES.md) to see where Stage 2 fails before reading anything. Then read "Your Task", "Why Not Just Ask the LLM?", and "Training Data Strategy" before writing any classifier code. Read "Where Learning Fits In The Agent" and "The Confidence Field" before implementing `agent.py`. The remaining sections are reference.
 
 ---
 
@@ -52,9 +39,7 @@ A user who says "I prefer afternoon meetings" matches. But consider:
 "My schedule is usually clear from 2pm onward."
 ```
 
-None of these phrases appear in the rule. `extract_direct_time_preference` returns `None` for all three. The preference is never written. The agent treats the user as if they had no preference at all, even though the intent is clear.
-
-This is not a flaw in the rule — it is a fundamental limit of keyword matching. The rule works for phrases it was written to catch and fails silently on everything else.
+None of these phrases appear in the rule. `extract_direct_time_preference` returns `None` for all three. The preference is never written. The agent treats the user as if they had no preference at all, even though the intent is clear. Keyword matching works for phrases it was written to catch and fails silently on everything else.
 
 Run `bash launch stage3-mini0` to see exactly where the rule fails before building your classifier.
 
@@ -62,7 +47,7 @@ Run `bash launch stage3-mini0` to see exactly where the rule fails before buildi
 
 ## Your Task: Build a Preference Classifier
 
-Stage 3 asks you to replace the Stage-2 rule with a trained text classifier. The classifier reads a user message and predicts one of three labels:
+The classifier reads a user message and predicts one of three labels:
 
 ```text
 morning      the message suggests a morning preference
@@ -70,7 +55,7 @@ afternoon    the message suggests an afternoon preference
 none         the message does not express a scheduling preference
 ```
 
-You design and implement this classifier. The interface it must satisfy is defined in `preference_extractor.py`:
+You design and implement this classifier. It replaces the Stage-2 keyword rule. The interface it must satisfy is defined in `preference_extractor.py`:
 
 ```python
 class PreferenceExtractor:
@@ -104,7 +89,7 @@ Word embeddings (e.g., from a sentence transformer) capture semantic similarity,
 **LLM-as-classifier (prompt-based)**
 Ask the LLM the question: "Does this message express a morning or afternoon scheduling preference?" This generalizes extremely well. See "Why Not Just Ask the LLM?" for why this is sometimes the wrong choice.
 
-You are not required to use any particular approach. A simpler classifier that is well-tuned and evaluated is better than a complex one used carelessly.
+A simpler classifier that is well-tuned and evaluated is better than a complex one used carelessly.
 
 **Dependency note.** The starter framework uses only the Python standard library. If your course setup allows extra packages, you may use them, but your submitted repo must still run in the grading environment. If you add dependencies for training or inference, document them clearly. If you want the safest path, implement a small local classifier that saves a JSON model under `stage3_artifacts/` and loads it with standard-library code.
 
@@ -112,7 +97,7 @@ You are not required to use any particular approach. A simpler classifier that i
 
 ## LLM-as-Classifier: Tradeoffs
 
-One legitimate approach is to use the LLM itself as the classifier — add a structured prompt that asks "does this message express a morning or afternoon preference?" and parse the response. Another is to train a local classifier (Naive Bayes, logistic regression, embeddings). Both are valid choices for this task. Here is what each approach gives up and what it gains:
+One approach is to use the LLM itself as the classifier — add a structured prompt that asks "does this message express a morning or afternoon preference?" and parse the response. Another is to train a local classifier (Naive Bayes, logistic regression, embeddings). Here is what each approach gives up and what it gains:
 
 **Local trained classifier**
 - *Gains:* Deterministic (same input → same output every time), fast (no model call), independently evaluable on labeled data, easy to iterate by adding training examples
@@ -122,9 +107,18 @@ One legitimate approach is to use the LLM itself as the classifier — add a str
 - *Gains:* Generalizes well to novel phrasing immediately, can handle nuanced context ("I have a dentist Tuesday morning so Tuesday afternoon is better than usual"), no training data required
 - *Tradeoffs:* Adds a model call per session (cost and latency), stochastic (same input might produce different output across calls), harder to evaluate and iterate independently
 
-Neither is universally better. For this task — short, self-contained scheduling messages expressing a simple binary preference — a well-tuned local classifier is a reasonable choice. So is an LLM-based approach. Your checkpoint (see MILESTONES.md) asks you to state your choice and justify it.
+For this task — short, self-contained scheduling messages expressing a simple binary preference — a well-tuned local classifier is a reasonable choice. So is an LLM-based approach. Your checkpoint (see MILESTONES.md) asks you to state your choice and justify it.
 
-If you use the LLM as your classifier, implement it inside `PreferenceExtractor.predict()` so it satisfies the same interface as a local model. Use `prediction.confidence` to reflect the model's stated certainty (or map from its output to a confidence value). The agent loop is identical either way.
+If you use the LLM as your classifier, implement it inside `PreferenceExtractor.predict()` so it satisfies the same interface as a local model. Use `prediction.confidence` to reflect the model's stated certainty (or map from its output to a confidence value).
+
+**Calling the LLM from `build_extractor`.** To use the LLM, create a client directly inside `build_extractor` or `predict` — the same environment variables set by the Colab connection are available to your code. The `runtime` object is not accessible from `build_extractor`, so you cannot use `runtime.complete()`. Use the Anthropic SDK directly instead:
+
+```python
+import anthropic
+client = anthropic.Anthropic()   # picks up ANTHROPIC_API_KEY from the environment
+```
+
+The agent loop is identical whether your extractor uses a local model or an LLM.
 
 ---
 
@@ -168,7 +162,7 @@ These contain time-of-day words but express the *opposite* of a preference. A cl
 
 **Generalization is the goal, not eval accuracy.** The held-out cases in mini-stage 1 are visible to you. Do not copy those exact sentences into your training data. That is memorizing a visible diagnostic, not learning the task. The final benchmark uses novel users with novel phrasing you have not seen. A classifier that truly learns what "morning preference" and "afternoon preference" mean — through diverse training examples and the right feature representation — will score well on the mini-stage eval as a natural consequence. A classifier tuned to that eval but not to the underlying signal will fail on genuinely new inputs.
 
-When your classifier gets something wrong in mini-stage 1, ask: "what kind of example would teach a model to handle this class of input?" — not "how do I add this exact sentence to my training set."
+When your classifier gets something wrong in mini-stage 1: what kind of example would teach a model to handle this class of input? Add several diverse examples of that kind, not the single failing sentence.
 
 ---
 

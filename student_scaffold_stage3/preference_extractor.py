@@ -2,49 +2,40 @@ from __future__ import annotations
 
 # Stage 3: implement your preference extractor here.
 #
-# Requirements
-# ------------
-# Your extractor must expose two things:
+# This file replaces the Stage-2 keyword rule with a trained classifier.
+# Instead of checking for exact phrases, your classifier learns from labeled
+# examples and generalizes to phrasings it hasn't seen.
 #
+# Interface:
 #   class PreferenceExtractor:
 #       def predict(self, text: str) -> Prediction: ...
 #
 #   def build_extractor(settings) -> PreferenceExtractor: ...
 #
-# `build_extractor` is called once when the agent starts up. It should load
-# or construct a trained classifier and return it. `predict` is called once
-# per session with the user message and must return a Prediction.
+# `build_extractor` is called once at agent startup — load your trained model
+# and return a ready extractor. `predict` is called once per session.
+# Don't change the Prediction field names; the agent and mini-stages depend
+# on `.label` and `.confidence`.
 #
-# The Prediction dataclass is defined below — do not change its field names,
-# since the agent and mini-stages depend on `.label` and `.confidence`.
-#
-# What the classifier must do
-# ---------------------------
-# Given any user message, predict one of three labels:
-#
+# Classification task: given a user message, predict one of:
 #   "morning"    the message suggests a morning scheduling preference
 #   "afternoon"  the message suggests an afternoon scheduling preference
-#   "none"       the message does not express a scheduling preference
+#   "none"       no scheduling preference expressed
 #
-# `confidence` is a float 0.0–1.0 expressing how certain the classifier is
-# about the label. You decide what the threshold should be in agent.py.
+# `confidence` (0.0–1.0) reflects how certain the classifier is. You set the
+# write-to-memory threshold in agent.py based on what you observe in mini-stage 1.
 #
-# Design choices (see ARCHITECTURE.md for a fuller discussion)
-# ------------------------------------------------------------
-# - What algorithm will you use? (Naive Bayes, logistic regression, other?)
-# - What features will you extract? (word counts, n-grams, embeddings?)
-# - Where will you store training data and the trained model?
-# - How will you handle the load/train decision in build_extractor?
+# Hard cases — train on all four patterns:
+#   "Mornings are impossible for me."      → none      (time word, but a constraint not a preference)
+#   "My afternoons are packed."            → none      (same trap)
+#   "I work best before lunch."            → morning   (preference, no obvious keyword)
+#   "The second half of the day suits me." → afternoon (unusual phrasing)
 #
-# Hard cases to think about
-# -------------------------
-# "Mornings are impossible for me."  — contains "morning" but NOT a morning preference
-# "My afternoons are packed."        — contains "afternoon" but NOT an afternoon preference
-# "I work best before lunch."        — morning preference with no keyword match
-# "The second half of the day suits me." — afternoon preference, unusual phrasing
-#
-# A classifier that merely checks for keyword presence will fail on these.
-# Your training data should include examples like these.
+# Design decisions (see ARCHITECTURE.md for the full discussion):
+# - Algorithm: Naive Bayes, TF-IDF + logistic regression, embeddings, LLM-based?
+# - Features: word counts, n-grams, sentence embeddings?
+# - Where to save the trained model: stage3_artifacts/ (tracked by git)
+# - How build_extractor locates the model: use settings.root for the repo root path
 
 from dataclasses import dataclass
 from typing import Any
@@ -57,16 +48,14 @@ class Prediction:
 
 
 class PreferenceExtractor:
-    """Starter preference classifier.
+    """Preference classifier.
 
     Suggestions:
     - Train in a separate script; load the saved model here.
     - Store the model file under stage3_artifacts/ and commit it (it is tracked by git).
     - Keep predict() fast — it is called once per session.
 
-    The starter version predicts "none" for every message so the benchmark can
-    run before you implement the learned component. Replace this with a real
-    classifier for Stage 3.
+    Replace this with your classifier.
     """
 
     def predict(self, text: str) -> Prediction:
@@ -74,13 +63,21 @@ class PreferenceExtractor:
 
 
 def build_extractor(settings: Any) -> PreferenceExtractor:
-    """Load or construct your trained extractor.
+    """Load your trained extractor.
 
     Called once at agent startup. `settings.root` is the project root
-    directory if you need it to locate training data or a saved model.
+    directory — use it to locate your saved model. Replace the stub below
+    with code that loads the model your training script saved.
 
-    Return a PreferenceExtractor instance ready to call .predict() on user
-    messages. The starter implementation below is intentionally weak; replace
-    it with code that loads your trained model.
+    Expected load pattern (adjust to match your training script):
+
+        import pickle, pathlib
+        model_path = pathlib.Path(settings.root) / "stage3_artifacts" / "model.pkl"
+        with model_path.open("rb") as f:
+            model = pickle.load(f)
+        return PreferenceExtractor(model)
+
+    If this raises FileNotFoundError, run your training script first:
+        python -m student_scaffold_stage3.train
     """
     return PreferenceExtractor()

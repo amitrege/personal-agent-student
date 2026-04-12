@@ -26,27 +26,24 @@ class MemoryStudentAgent(StudentAgent):
     def run_session(self, session, runtime: StudentRuntime) -> SessionResult:  # noqa: ANN001
         """Stage-2 agent: your Stage-1 loop extended with persistent memory.
 
-        Start by copying your Stage-1 run_session here. Then add three pieces —
-        each one is a pattern you built in the mini-stages:
+        Copy your Stage-1 run_session here, then add three pieces using the
+        patterns from the mini-stages:
 
         BEFORE the tool loop:
-          1. Detect whether the user message contains a time preference.
-             If it does, write it to memory.                              (mini_1)
+          1. Detect a time preference in the user message; write it to memory
+             if one is found.                                           (mini_1)
           2. Search memory for any stored preference for this user.
-             Store the result — you will use it during slot selection.    (mini_2)
+             Save the result — you'll use it at the create_event step.  (mini_2)
 
-        INSIDE the tool loop, when the model requests calendar.create_event:
-          3. If memory has an active preference and you have a list of
-             free slots from find_free_slots, use choose_preferred_slot
-             to pick the best one and override start_time.               (mini_3 + mini_4)
+        INSIDE the tool loop:
+          3. Each time find_free_slots returns, save the slot list. When the
+             model then requests create_event, intercept the arguments and
+             override start_time with the preferred slot if one exists.
+             (mini_3 + mini_4)
 
-        Design choices you make here:
-        - When `active_preference` is set, do you add a rule to the system
-          prompt? If so, how do you word it so the model applies it correctly?
-        - What happens if find_free_slots has not been called yet when
-          create_event is requested? How do you handle that case safely?
-        - The keyword rule extract_direct_time_preference only catches
-          direct phrases. Is that acceptable for Stage 2? Why or why not?
+        Edge cases to handle: what if create_event is requested before
+        find_free_slots has run? What hint, if any, do you add to the system
+        prompt when active_preference is set, and how do you word it?
 
         Do not hard-code users, note titles, dates, attendees, or expected slots.
         Hidden sessions use different values.

@@ -17,21 +17,16 @@ class BaselineStudentAgent(StudentAgent):
         self.settings = settings
 
     def run_session(self, session, runtime: StudentRuntime) -> SessionResult:  # noqa: ANN001
-        """Run one independent Stage-1 task.
+        """Run one Stage-1 scheduling session.
 
-        You built a working minimal loop in mini_5. This file is the same loop
-        with two additions: error handling (what if the model returns bad JSON?)
-        and design choices (what rules go in prompts.py?).
+        This is the same four-step loop from mini-stages 1–5, assembled into
+        a working agent. The loop calls the model, parses the response, runs
+        the requested tool, and repeats until the model returns a final answer.
 
-        Design choices are yours to make:
-        - What rules go in prompts.py to guide the model toward the right tool sequence?
-        - How do you handle turns where the model returns invalid JSON?
-        - When is the agent truly done? (Hint: a final_response alone may not be enough.)
-
-        Objects available:
-        - session.user_message  : the user's request
-        - runtime               : .complete(), .call_tool(), .finish(), .list_tools()
-        - messages              : the conversation history you build up each turn
+        Design choices are yours:
+        - What rules go in prompts.py? (Run mini-stage 6 to see the baseline first.)
+        - How many invalid-JSON retries before giving up?
+        - When is the agent truly done — final_response alone, or verified event creation?
         """
         messages: list[dict[str, Any]] = [{"role": "user", "content": session.user_message}]
         invalid_response_count = 0
@@ -40,38 +35,21 @@ class BaselineStudentAgent(StudentAgent):
         for turn_index in range(runtime.max_model_turns):
             system_prompt = build_system_prompt(runtime)
 
-            # STEP 1: Call the model — same pattern as mini-stage 1.
-            # runtime.complete(messages=..., require_json=True)
-            # Prepend {"role": "system", "content": system_prompt} to messages.
+            # STEP 1 — Ask the model what to do next.  (mini-stage 1)
             # TODO ↓
 
-            # STEP 2: Record the response and parse the action.
-            # Same as mini-stage 2, with ONE NEW ADDITION: wrap parse_action in try/except.
-            #   - Append assistant_message(response) to messages first.
-            #   - try: action = parse_action(response.content)
-            #   - except: increment invalid_response_count,
-            #             append {"role": "user", "content": invalid_json_feedback()} to messages,
-            #             then `continue`.
-            # (invalid_json_feedback is already imported at the top of this file)
+            # STEP 2 — Record the response and parse the action.  (mini-stage 2)
+            # Append assistant_message(response) to messages, then parse.
+            # Wrap parse_action in try/except to handle malformed JSON.
             # TODO ↓
 
-            # STEP 3: If the model requested a tool, run it and loop back.
-            # Same pattern as mini-stages 3 + 4.
-            # check action.get("tool_call"), call runtime.call_tool(..., turn_index=turn_index),
-            # append tool_result_message(tool_name, result), then `continue`.
+            # STEP 3 — If the model requested a tool, run it and loop back.  (mini-stages 3+4)
             # TODO ↓
 
-            # STEP 4: If the model is done, store the answer and stop.
-            # Same pattern as mini-stage 5.
-            # check action.get("final_response"), store in final_response, break.
+            # STEP 4 — If the model is done, store the answer and stop.  (mini-stage 5)
             # TODO ↓
 
         # Return the result to the benchmark.
-        # runtime.finish() packages final_response into a SessionResult.
-        # The two fallbacks below handle edge cases:
-        #   - exhausted_invalid_feedback(): the model never returned valid JSON
-        #   - starter fallback: the loop ended without any response because
-        #     the TODOs above have not been implemented yet
         if not final_response and invalid_response_count > 0:
             final_response = exhausted_invalid_feedback()
         if not final_response:

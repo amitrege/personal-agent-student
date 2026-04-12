@@ -1,50 +1,45 @@
 # Stage-1 Mini-Stages
 
-Do not start by editing `agent.py`. Work through these mini-stages first. Each one adds one concept. By Mini-Stage 5 you will have seen every building block the full agent uses — then `agent.py` is those blocks in a loop, with two additions.
+Don't start with `agent.py`. Work through these mini-stages first. Each one adds a single concept, and by mini-stage 5 you'll have built every piece of the agent in isolation. `agent.py` is those same pieces assembled into a loop — once you've done the mini-stages, it should feel like connecting things you already understand.
 
-**Before you start — read these three sections of `ARCHITECTURE.md` first (≈5 min total):**
-- **"What an Agent Is"** — explains the loop pattern your code must implement: model call → parse action → run tool → repeat. Every mini-stage is one piece of this loop.
-- **"The Three Main Objects"** — shows the `runtime`, `session`, and `response` objects you will use throughout. Know what `runtime.complete()`, `runtime.call_tool()`, and `runtime.finish()` do before writing any code.
-- **"The JSON Response Format"** — the model always replies with `{"tool_call": ..., "final_response": ...}`. Your code branches on these two fields. Skim this so the format is not a surprise when you see it in mini-stage 2.
+**Run mini-stage 0 first (no reading needed yet):**
 
-Use `CLIENT=scripted` for all mini-stages through mini_5. That gives you a deterministic, fast response so you can learn the code path without waiting on a real model. Switch to the real model for mini_6 and the final agent.
-
----
-
-## Mini-Stage 0: Observe the System
-
-**File:** `student_scaffold/mini_0_finish.py`
-
-**Run:**
 ```bash
 CLIENT=scripted bash launch mini0
 ```
 
-**This file is already complete.** Do not edit it — just run it and read the output.
+It prints the available tools and the full system prompt. Spend a few minutes reading the output — the tool names and JSON format you see there are what you'll be working with throughout. Then come back and read these three sections of `ARCHITECTURE.md` before starting mini-stage 1 (about 5 minutes):
 
-**What it does:** Prints three things before returning:
-1. The user message (`session.user_message`) — what the user asked
-2. The available tools — every tool your agent can call, with parameter names
-3. The full system prompt — the instructions the model receives, including tool descriptions and response format
+- **"What an Agent Is"** — the loop your code implements: ask the model → run a tool → repeat. Every mini-stage builds one piece of this.
+- **"The Three Main Objects"** — `runtime`, `session`, and `response`. Know what `runtime.complete()`, `runtime.call_tool()`, and `runtime.finish()` do before writing any code.
+- **"The JSON Response Format"** — the model always replies with `{"tool_call": ..., "final_response": ...}`. Your code branches on these two fields throughout.
 
-**What to observe:**
-- Write down the tool names. You will use them when writing `prompts.py` rules.
-- Read the system prompt end-to-end. Notice the JSON response format the model is expected to follow.
-- Note what fields `calendar.create_event` requires — the grader checks these.
+Use `CLIENT=scripted` through mini-stage 5. The scripted client returns deterministic responses so you can learn the code path without waiting for a real model or spending API credits. Switch to the real model for mini-stage 6 and the final agent.
 
-**When this works:** You will see the user message, a list of 7 tool names (two note tools, two email tools, three calendar tools), and the full system prompt ending with the `tool_call` / `final_response` JSON format block. Last line: `Exploration complete.`
+---
 
-**Think about:** Look at the tool list. Given the user message, which tool would you call first? What argument would you pass?
+## Mini-Stage 0: See the Whole System First
+
+**File:** `student_scaffold/mini_0_finish.py`
+
+You already ran this above. It prints three things:
+1. The user message (`session.user_message`) — what the user is asking for
+2. Every tool your agent can call, with their parameter names
+3. The full system prompt — the instructions the model receives before it sees the user's request
+
+**Look for:** seven tool names (two note tools, two email tools, three calendar tools), and the JSON format block at the end of the system prompt.
+
+Given the user message, which tool would you call first? What argument would you pass? The model makes this decision, but understanding its reasoning is how you write better prompt rules later.
 
 <details>
 <summary>Answer</summary>
 
-The user message says "Use my SimpleNote note titled 'Monday planning brief'..." so the first tool is `simple_note.search_notes` with `query="Monday planning brief"`. That gives you a list of matching notes. You then need the note's ID to call `simple_note.show_note` and get the full content. The model figures this out — your job is to run the tools it requests.
+The user message references a note ("Use my SimpleNote note titled 'Monday planning brief'..."), so the first tool is `simple_note.search_notes` with `query="Monday planning brief"`. That returns a list of matching notes. The model then needs the note's ID to call `simple_note.show_note` and read the full content. Your job in the agent is to execute whatever tool the model requests — you don't decide the sequence, you just run it reliably.
 </details>
 
 ---
 
-## Mini-Stage 1: Call the Model Once
+## Mini-Stage 1: Make the First Model Call
 
 **File:** `student_scaffold/mini_1_model_call.py`
 
@@ -53,27 +48,25 @@ The user message says "Use my SimpleNote note titled 'Monday planning brief'..."
 CLIENT=scripted bash launch mini1
 ```
 
-**Gap this fills:** Mini-Stage 0 returns a hardcoded string. You need to actually ask the model what to do with the user's request.
+Mini-stage 0 returns a hardcoded string — it never actually asks the model anything. Here you fix that: send the user's request to the model and get back a real response.
 
-**The concept:** `runtime.complete(messages, require_json)` sends the conversation history to the model and returns a response object. You pass the system prompt as the first message, followed by the user messages. `require_json=True` tells the model it must reply with valid JSON so your code can parse it later.
+The call is `runtime.complete(messages, require_json=True)`. It sends the conversation history to the model and returns a response object. You pass the system prompt as the first message, then the user message, then any tool results that have accumulated so far. `require_json=True` constrains the model to reply with valid JSON — without it, parsing becomes unreliable.
 
-**Think about it first:** You have the user message in `messages` and the system instructions in `system_prompt`. What does the model need to receive before it can suggest a first action? What format does that input need to be in?
+You have the user message and the system prompt. What does the model need before it can suggest a first action?
 
 <details>
 <summary>Answer</summary>
 
-The model needs both the instructions (system prompt) and the user's request in the `messages` list. The system prompt goes first as `{"role": "system", "content": system_prompt}`, then the user message follows. This is the same shape as a raw OpenAI API call — `runtime.complete()` just wraps it with a cleaner interface and routes to whichever client is configured.
+Both. The system prompt tells the model what tools exist and what format to use. The user message tells it what to do. Without the system prompt the model doesn't know it should respond with JSON or that it has any tools. Without the user message it has nothing to act on. Check the `runtime.complete()` signature in ARCHITECTURE.md under "The Three Main Objects — runtime" for how to pass them.
 </details>
 
-**Your task:** Replace `response = ...` with a call to `runtime.complete`. Look up the signature in ARCHITECTURE.md under "The Three Main Objects — runtime". You have the user message and the system prompt — make sure the model receives both. Pay attention to how the messages list should be structured.
+**Your task:** Replace `response = ...` with a call to `runtime.complete`. The signature is in `ARCHITECTURE.md` under "The Three Main Objects — runtime". All arguments are keyword-only.
 
-**What to observe:** With `CLIENT=scripted`, the output should end with a JSON string containing a `tool_call`. Add a `print(response.content)` before the return to confirm.
-
-**When this works:** The last line of output is a JSON string with `tool_call` and `final_response` keys. If you see a Python exception, re-read the call signature in ARCHITECTURE.md — note that all arguments are keyword-only.
+**Working when** the output ends with a JSON string containing `tool_call` and `final_response` keys. If you see a Python exception, reread the call signature — keyword-only means you must write `messages=...`, not pass positional arguments.
 
 ---
 
-## Mini-Stage 2: Parse the Model Action
+## Mini-Stage 2: Parse the Model's Response
 
 **File:** `student_scaffold/mini_2_parse_action.py`
 
@@ -82,31 +75,31 @@ The model needs both the instructions (system prompt) and the user's request in 
 CLIENT=scripted bash launch mini2
 ```
 
-**Gap this fills:** `response.content` is a raw string — you cannot write `if response.content['tool_call']`. You need a Python dict.
+The model returned a JSON string. A string can't be subscripted like a dict — you can't write `response.content["tool_call"]`. Before you can branch on the model's decision, you need to turn that string into a Python object.
 
-**The concept:** `parse_action(content)` turns the model's JSON string into a dict with two useful keys:
-- `action['tool_call']` — a dict `{"name": ..., "arguments": {...}}` if the model wants a tool run; `None` if not
-- `action['final_response']` — a non-empty string if the model is finished; `""` if not
+`parse_action(content)` does this. It calls `json.loads()` under the hood, handles edge cases, and returns a plain dict with exactly two fields:
+- `action["tool_call"]` — a dict `{"name": ..., "arguments": {...}}` if the model wants a tool run; `None` otherwise
+- `action["final_response"]` — a non-empty string when the model is done; `""` otherwise
 
-Every agent turn branches on exactly these two fields. Either there is a tool to run, or there is a final answer to return.
+Every turn in the agent loop branches on exactly these two fields. This mini-stage is about getting comfortable with that dict.
 
-**Think about it first:** `response.content` is the string `'{"tool_call": {"name": "simple_note.search_notes", ...}, "final_response": ""}'`. What do you need to do to it before you can write `if action.get("tool_call")`?
+`response.content` is the string `'{"tool_call": {"name": "simple_note.search_notes", ...}, "final_response": ""}'`. What needs to happen before you can write `if action.get("tool_call")`?
 
 <details>
 <summary>Answer</summary>
 
-Parse it. A string can't be subscripted like a dict. `parse_action()` calls `json.loads()` under the hood and normalizes the result — it handles aliases and edge cases so you don't have to. The result is a plain Python dict you can branch on.
+Parse it. `parse_action()` is that parsing step. It turns the raw string into a Python dict you can branch on. The function also normalizes some edge cases (aliases, missing fields) so you don't have to worry about them in your loop logic.
 </details>
 
-**Your task:** Replace `action = ...`. The function `parse_action` is already imported at the top of the file. Look at what you have (the model's response object) and what `parse_action` expects as input.
+**Your task:** Replace `action = ...`. `parse_action` is already imported at the top of the file. Look at what you have (the response object from mini-stage 1) and what the function expects as input.
 
-**What to observe:** Print `action`. It should be a dict with `tool_call` and `final_response` keys. Check what fields are inside `action['tool_call']` — you will need them next.
+Print `action` and look inside `action["tool_call"]` — you'll need those field names in the next mini-stage.
 
-**When this works:** Printing `action` produces a dict. If you get a `TypeError` or `None`, check what you are passing to `parse_action`.
+**Working when** printing `action` gives you a dict. If you get a `TypeError` or `None`, check what you're passing to `parse_action`.
 
 ---
 
-## Mini-Stage 3: Call One Tool
+## Mini-Stage 3: Execute One Tool
 
 **File:** `student_scaffold/mini_3_one_tool.py`
 
@@ -115,27 +108,27 @@ Parse it. A string can't be subscripted like a dict. `parse_action()` calls `jso
 CLIENT=scripted bash launch mini3
 ```
 
-**Gap this fills:** You know which tool the model wants, but the model cannot run it. Your Python code must execute the tool.
+You know which tool the model wants to call — but the model can't run it. The model produces text; it has no ability to reach into a file system, database, or calendar API. Your Python code does that on its behalf.
 
-**The concept:** `runtime.call_tool(tool_name, arguments, turn_index)` runs the named tool in the benchmark world and returns three values: the tool name used, the arguments used, and the result. The result is real data — a list of notes, a note's full content, available time slots, a calendar confirmation, etc.
+`runtime.call_tool(tool_name, arguments, turn_index)` runs the named tool in the benchmark world and returns three values: the tool name used, the arguments it was called with, and the result. The result contains real benchmark data — a list of notes, a note's full content, a set of available time slots, a calendar confirmation.
 
-**Think about it first:** You have `action['tool_call']['name']` and `action['tool_call']['arguments']`. What needs to happen before the model can use this information?
+You have `action["tool_call"]["name"]` and `action["tool_call"]["arguments"]`. What needs to happen before the model can use this information?
 
 <details>
 <summary>Answer</summary>
 
-Your Python code calls the tool and gets the result. The model lives inside `runtime.complete()` — it produces text. It has no ability to reach into a file system or calendar API. Only your code can do that. Once you have the result, you need to get it back into the conversation so the model can see it — that's the next mini-stage.
+Your code runs the tool and captures the result. The model lives inside `runtime.complete()` — it produces a string saying "call this tool with these arguments." It has no other capabilities. Only your Python code can actually execute a tool and retrieve data. Once you have the result, you need to put it back into the conversation so the model can see it and plan its next step. That's mini-stage 4.
 </details>
 
-**Your task:** Replace the sentinel with a call to `runtime.call_tool`. You have the action dict from mini-stage 2 — pull out the tool name and arguments and pass them through. Look up the signature in ARCHITECTURE.md.
+**Your task:** Replace the sentinel with a call to `runtime.call_tool`. Pull the tool name and arguments from the action dict and pass them through. Full signature in `ARCHITECTURE.md`.
 
-**What to observe:** Print `result`. You should see real data from the benchmark world — a list of note summaries or similar. This is what the model needs to decide its next step.
+Print `result` to see what the benchmark returns.
 
-**When this works:** `result` contains benchmark data (not `None`). If you get a `KeyError` or `TypeError`, re-read how `call_tool` expects its arguments to be passed.
+**Working when** `result` contains actual benchmark data, not `None`. If you get `KeyError` or `TypeError`, reread how `call_tool` expects its arguments.
 
 ---
 
-## Mini-Stage 4: Send the Tool Result Back
+## Mini-Stage 4: Complete the Round Trip
 
 **File:** `student_scaffold/mini_4_one_round_trip.py`
 
@@ -144,23 +137,23 @@ Your Python code calls the tool and gets the result. The model lives inside `run
 CLIENT=scripted bash launch mini4
 ```
 
-**Gap this fills:** The tool result is in your Python variable. The model does not know about it yet.
+You ran the tool and got the result. The model still doesn't know — `result` is just a Python variable sitting outside the conversation. The model can only see what's in `messages`.
 
-**The concept:** After a tool call, append the result to `messages` using `tool_result_message(tool_name, result)`, then call `runtime.complete()` again with the updated messages. This is one complete "round trip": model asks → tool runs → model sees result. The full agent is many round trips in a loop.
+Closing the loop takes two steps: add the tool result to `messages` using `tool_result_message(tool_name, result)`, then call `runtime.complete()` again with the updated list. The model sees the full exchange — original request, its first response, the tool result — and returns a new response deciding what to do next.
 
-**Think about it first:** After the tool runs, you have the result in a Python variable. How does the model find out what the tool returned?
+That's one complete round trip: model asks → tool runs → model sees result. The full agent is many of these chained together.
+
+After the tool runs, how does the model find out what it returned?
 
 <details>
 <summary>Answer</summary>
 
-You add the result to `messages` using `tool_result_message()`, which formats it as a user-role message the model can read. Then you call `runtime.complete()` again with the updated messages list. The model sees the tool result and decides what to do next. If you skip adding the result to `messages`, the model calls the same tool again — it never knew the answer came back.
+You add the result to `messages` using `tool_result_message()`, which formats it as a user-role message the model can read. Then you call `runtime.complete()` again with the updated list. If you skip the append step, the model never sees the result — it will request the same tool again on the next call, because from its perspective nothing happened after its first response.
 </details>
 
-**Your task:** The tool result is in a Python variable. The model has not seen it yet. Think about what needs to happen to `messages` and then what to call next to get the model's second response. Both helpers you need are already imported at the top of the file.
+**Your task:** append the tool result to `messages`, then call `runtime.complete()` again to get the second response. Both helpers (`tool_result_message` and `assistant_message`) are already imported.
 
-**What to observe:** The second model response should request a different tool than the first — it now has new information to act on. If it requests the same tool again, something went wrong with how the result reached the model.
-
-**When this works:** The second response is a JSON string with a different tool name. You have just built the core of an agent.
+**Working when** the second model response requests a *different* tool than the first. It now has new information and is choosing what to do next.
 
 ---
 
@@ -173,29 +166,21 @@ You add the result to `messages` using `tool_result_message()`, which formats it
 CLIENT=scripted bash launch mini5
 ```
 
-**Gap this fills:** Mini-Stage 4 shows one round-trip. The real agent needs many. You have the pieces — combine them.
+Mini-stage 4 showed one round trip. A real scheduling task needs four or five — search the note, open it, find free slots, create the event. The pattern is the same each time; you just need to repeat it without writing each iteration by hand.
 
-**The concept:** The full agent is the round-trip from mini_4 inside a `for` loop. Instead of manually making a second `runtime.complete()` call, you `continue` after each tool result, and the *loop* calls the model again at the top of the next iteration.
+The structure is already in place: the `for` loop, the model call (STEP 1), the parse (STEP 2), the tool call and result append (STEP 3). The one missing piece is STEP 4: knowing when to stop.
 
-The only new question is: **when do you stop?** The model signals completion by setting `action['final_response']` to a non-empty string.
+The model signals completion by setting `action["final_response"]` to a non-empty string. When that happens, store the response and `break`. The `for` loop's upper bound (`runtime.max_model_turns`) is a safety net — if the model never signals done, the loop terminates cleanly instead of running forever.
 
-**Think about it first:** You have a working one-round-trip from mini_4. The scheduling task needs four to five tool calls. What changes if you put the round-trip inside a loop? What does the loop need to know to stop?
+After `continue` at the end of STEP 3, execution returns to the top of the loop and the model gets called again with the updated `messages`. The loop naturally chains round trips without you writing each one manually.
 
-<details>
-<summary>Answer</summary>
+**Your task:** Implement STEP 4 — replace `pass` with the termination logic. Check `action["final_response"]`, store it, and `break`.
 
-Inside the loop: the `continue` at the end of STEP 3 sends execution back to the top, where the model gets called again with the updated messages. The loop naturally chains round-trips without you manually writing each one. To stop: check `action['final_response']` at the end of each iteration. When it's non-empty, the model is done — store the response and `break`. The `for` loop's upper bound (`runtime.max_model_turns`) is a safety net in case the model never finishes.
-</details>
-
-**What is already given:** The loop, STEP 1 (call model), STEP 2 (parse action), STEP 3 (call tool + continue). Everything from mini_1 through mini_4 is already written.
-
-**Your task:** Implement STEP 4 — replace `pass` with the termination logic. When the model has produced a final answer, store it and stop the loop. Look at the action dict to determine when that is.
-
-**What to observe:** When this works, the output should show multiple tool calls (search, open, find slots, create event) followed by a final response. This is the first time you see the full agent working end-to-end.
+**Working when** the output shows a sequence of tool calls (search, open, find slots, create event) followed by a natural-language final response. You've just built a working agent from scratch.
 
 ---
 
-## Mini-Stage 6: Observe Without Guidance
+## Mini-Stage 6: Watch Without Guidance
 
 **File:** `student_scaffold/mini_6_observe_prompts.py`
 
@@ -204,39 +189,29 @@ Inside the loop: the `continue` at the end of STEP 3 sends execution back to the
 CLIENT=local bash launch mini6
 ```
 
-**This file is already complete.** Do not edit it — just run it and read the output.
+Run it without editing. It runs the same loop as mini-stage 5, but with only the benchmark's default rules in the system prompt — no `EXTRA_RULES` from `prompts.py`.
 
-**What it does:** Runs the full agent loop (same as mini_5) but builds the system prompt with *only* the benchmark's default rules — no `EXTRA_RULES` from `prompts.py`. It prints verbose turn-by-turn output so you can see exactly what the model decides to do without any custom guidance.
+Watch for the model's baseline behavior before you add any guidance. Does it open the note before scheduling? Does it call `find_free_slots`, or does it pick a time directly? Does it invent attendees? The behaviors you want to fix here become the rules you write in `prompts.py`.
 
-**Why this matters:** Before you write rules for `prompts.py`, you need to know what you're fixing. This mini-stage shows you the model's baseline behavior.
+This requires `CLIENT=local` (the real model). If you haven't set up the model connection yet, run `bash launch doctor` first.
 
-**What to observe:**
-- Does the model open the note or thread before scheduling, or does it guess at the meeting details?
-- Does it call `calendar.find_free_slots`, or does it pick a start time directly?
-- Does it pick a start time that conflicts with an existing calendar event?
-- Does it invent attendees or meeting titles from memory?
-
-**Note:** This mini-stage requires `CLIENT=local` (the real model). If you have not set up the model connection yet, run `bash launch doctor` first and follow the setup instructions.
-
-**Think about it:** After running, write down one or two specific behaviors you'd want to change. Those observations become your `EXTRA_RULES` in the next step.
+Write down one or two specific behaviors you'd change — not "it was wrong" but "it called `create_event` without calling `find_free_slots` first." That specificity is what makes a useful rule.
 
 ---
 
-## Debugging Stage 1
+## When Things Go Wrong
 
-Use these when your score is not what you expect.
+**`suite_score` is 0 or blank:** the agent is crashing before `runtime.finish()` is reached. Run `bash launch run alex` and look for a Python traceback. Common causes: `parse_action()` raising on malformed JSON (the `try/except` in STEP 2 of `agent.py` handles this), a required tool argument missing, or the loop ending without hitting `final_response`.
 
-**`suite_score` is 0 or blank:** The agent is probably crashing before `runtime.finish()` is reached. Run `bash launch run alex` and look for a Python traceback. Common causes: `parse_action()` raising on malformed JSON (add the try/except from Phase A), a required tool argument missing, or the loop never hitting `final_response`.
+**`artifact_read_rate` is 0:** the agent created the event but never opened the note or email first. The model jumped straight from the user message to scheduling. Add a prompt rule requiring it to read the source before calling `find_free_slots` or `create_event`, and check the verbose turn-by-turn output to see exactly what sequence was used.
 
-**`artifact_read_rate` is 0:** The agent created the event but skipped opening the note or email first. Check your prompt rules — the model needs guidance to open the referenced source before calling `calendar.find_free_slots`. Also check the verbose turn-by-turn output to see what tool sequence the model actually used.
+**Agent loops without terminating:** the model never returns a non-empty `final_response`. Check your termination condition — test `action.get("final_response", "").strip()`, not just `action.get("final_response")` (an empty string is falsy but a whitespace-only string is not). Also verify the loop's turn limit is being checked.
 
-**Agent loops without terminating:** The model never returns a non-empty `final_response`. Check your termination condition — it should test `action.get('final_response', '').strip()`, not just `action.get('final_response')`. Also verify your loop safety limit (`runtime.max_model_turns`) is being checked.
-
-**Wrong title, attendees, or date in the event:** The model is using the user message text instead of the source content. Add a prompt rule requiring it to open the note or email thread before calling `calendar.find_free_slots` or `calendar.create_event`.
+**Wrong title, attendees, or date:** the model used the user message text instead of the source content. It needs a rule telling it to open the note or email thread before calling `find_free_slots` or `create_event`.
 
 ---
 
-## Final Stage-1 Agent
+## The Final Agent
 
 **File:** `student_scaffold/agent.py`
 
@@ -246,42 +221,40 @@ Use these when your score is not what you expect.
 CLIENT=scripted bash launch run alex
 ```
 
-The skeleton in `agent.py` is the same four-step loop from mini-stages 1–5. Implement all four steps using the same patterns you already built. The step comments label which mini-stage each pattern came from.
+The skeleton in `agent.py` is the same four-step loop from mini-stages 1–5, assembled in order. The step comments tell you which mini-stage each pattern came from. Implement all four steps.
 
-The one new concept is in STEP 2: wrap `parse_action()` in `try/except`. If the model returns malformed JSON, `parse_action()` raises — without a handler, the whole session crashes. On exception: increment `invalid_response_count`, append `{"role": "user", "content": invalid_json_feedback()}` to messages, and `continue`. This tells the model it produced bad output and gives it a chance to retry. (`invalid_json_feedback` is already imported at the top of the file.)
+One piece is new compared to the mini-stages: STEP 2 wraps `parse_action()` in a `try/except`. With a real model, malformed JSON happens occasionally. Without a handler, the whole session crashes on the first bad response. The handler increments `invalid_response_count`, appends `{"role": "user", "content": invalid_json_feedback()}` to messages (so the model knows it produced bad output and can retry), and `continue`s. (`invalid_json_feedback` is already imported.)
 
-Verify the loop works end-to-end with `CLIENT=scripted` before moving to the real model.
+Verify the loop works end-to-end with `CLIENT=scripted` before switching to the real model.
 
 **Phase B: Design your prompt rules**
-
-Once the mechanics work, switch to the real model and start with minimal rules:
 
 ```bash
 CLIENT=local bash launch run alex
 ```
 
-If you ran mini_6, you already have observations. If not, comment out your `EXTRA_RULES` in `prompts.py` and run to see the baseline behavior. Then write rules to fix what you observe.
+If you ran mini-stage 6, you already have observations. If not, comment out `EXTRA_RULES` in `prompts.py` and run once to see the baseline.
 
-Design tension to keep in mind:
-- **Too vague** (e.g., "be helpful"): the model ignores ambiguous guidance and guesses.
-- **Too specific** (e.g., "always use note_id 101"): passes visible tests but fails on hidden inputs with different values.
-- **Wrong order** (e.g., "create the event, then find free slots"): the model follows the rule even when it's wrong.
+Three failure modes to watch for:
+- **Too vague** ("be helpful") — the model ignores guidance that isn't specific enough.
+- **Too specific** ("always use note_id 101") — passes visible tests but fails on hidden inputs with different values.
+- **Wrong order** ("create the event, then find free slots") — the model follows the rule even when it leads it astray.
 
-The goal is the minimum set of rules that produces reliable behavior on inputs you have not seen. Run `bash launch eval` to score your rules against the visible benchmark.
+The goal is the minimum set of rules that produces reliable behavior on inputs you haven't seen. Run `bash launch eval` to score against the visible benchmark.
 
-**Other design choices:**
-- **Termination:** Should you trust `final_response` unconditionally, or verify the event was actually created?
-- **Error recovery:** How many invalid JSON retries is reasonable? What happens if the model loops without making progress?
+Two more design decisions to work through:
+- **Termination:** trust `final_response` unconditionally, or verify the event was actually created?
+- **Error recovery:** how many invalid-JSON retries before giving up?
 
-Do not hard-code note titles, dates, attendees, or expected tool sequences. Hidden test sessions use different values.
+Don't hard-code note titles, dates, attendees, or expected tool sequences. Hidden test sessions use different values.
 
 ---
 
 ## Stage-1 Checkpoint
 
-Complete this before moving to Stage 2.
+Run `bash launch eval` with three different `EXTRA_RULES` configurations and fill in the table.
 
-**Prompt experiment log** — run `bash launch eval` with three different `EXTRA_RULES` configurations and fill in the table:
+**Prompt experiment log:**
 
 | Configuration | Strategy (one phrase) | suite_score | artifact_read_rate |
 |--------------|----------------------|-------------|-------------------|
@@ -293,11 +266,11 @@ Which variant had the most impact, and why?
 
 →
 
-**Termination edge case** — describe a specific scenario where `final_response` is non-empty but the calendar event was not created correctly:
+**Termination edge case** — describe a specific scenario where `final_response` is non-empty but the calendar event wasn't created correctly:
 
 →
 
-**Generalization check** — do any of your prompt rules contain specific note titles, user names, or dates?
+**Generalization check** — do any of your rules contain specific note titles, user names, or dates?
 - [ ] Yes — remove them before submitting
 - [ ] No — good to move on
 
@@ -305,4 +278,4 @@ Which variant had the most impact, and why?
 
 ## Ready for Stage 2?
 
-Run `bash launch eval` and confirm `suite_score` is at a level you are happy with. Then move to `student_scaffold_stage2/ARCHITECTURE.md` to start Stage 2.
+Confirm `suite_score` is at a level you're happy with, then open `student_scaffold_stage2/ARCHITECTURE.md` to start Stage 2.

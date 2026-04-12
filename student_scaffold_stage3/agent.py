@@ -53,16 +53,19 @@ class LearnedMemoryStudentAgent(StudentAgent):
         # Call your classifier on the user message.
         # Use self.extractor.predict(...) — it returns a Prediction with
         # .label and .confidence.
-        prediction = self.extractor.predict(session.user_message)  # TODO: improve extractor quality
+        prediction = self.extractor.predict(session.user_message)  # implement the extractor in preference_extractor.py
 
         # -- STAGE-3 STEP 2 ----------------------------------------------------
         # Conditionally write memory.
-        # If the label is morning or afternoon AND confidence is above your
-        # threshold, write to memory. If the label is none, do not write.
+        # Write when the label is "morning" or "afternoon" AND confidence
+        # is above your threshold. Do not write for "none".
         # Pass prediction.confidence (not 1.0) as the confidence argument.
-        # Starter behavior: no memory is written yet, so the benchmark runs but
-        # preference/memory scores remain low until you implement this block.
-        if prediction.label in {"morning", "afternoon"} and prediction.confidence >= 1.0:
+        #
+        # TODO: Replace 1.0 with a threshold calibrated from your mini-stage 1
+        # output. 1.0 is a placeholder — no real classifier reaches it, so
+        # this block won't fire until you change it. Use your mini-stage 1
+        # confidence distributions to pick a value you can justify.
+        if prediction.label in {"morning", "afternoon"} and prediction.confidence >= 1.0:  # TODO: replace 1.0
             runtime.write_memory(
                 key="preferred_time_window",
                 value=prediction.label,

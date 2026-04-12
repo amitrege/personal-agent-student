@@ -1,28 +1,8 @@
 # Stage-1 Architecture
 
----
+The Stage-1 agent is a loop: the model decides which tool to call, your code runs it and feeds the result back, and this repeats until the task is done. This document explains each component of that loop and the objects your code works with.
 
-## What You Will Learn in Stage 1
-
-By the end of Stage 1 you will understand:
-- How an **agent loop** differs from a single model call: the model decides what to do; your code executes it
-- How to maintain **conversation history** across multiple model calls in a single session
-- How tool results are fed back to the model so it can plan the next step
-- How **system prompt rules** affect model behavior — and why more rules are not always better
-
----
-
-## How to Use This Document
-
-You do not need to read this end-to-end before writing code.
-
-**Before mini-stage 0:** Read "What an Agent Is" and "The Three Main Objects" (~3 min).
-
-**While working through mini-stages 1–5:** Use the relevant section as a reference — the call signatures and message formats are all here.
-
-**Before agent.py:** Read "The System Prompt" and "The Expected Task Flow".
-
-Everything else is reference — skip it and come back when you need it.
+If you haven't already, run `CLIENT=scripted bash launch mini0` before reading — it shows the tools and prompt format that this document describes. Then read "What an Agent Is" and "The Three Main Objects" before mini-stage 1. Use the rest as a reference while building.
 
 ---
 
@@ -53,9 +33,7 @@ An agent is a loop. Instead of calling the model once and returning an answer, y
 
 The model acts as the *brain* — it decides which tool to call and what arguments to pass. Your Python code is the *hands* — it actually runs the tools and feeds results back. Neither can complete the task alone.
 
-This pattern is not specific to scheduling. In this project the tools happen to be notes, email, and calendar because those make the benchmark concrete. The same scaffold could support different tool sets: search course materials and draft LMS messages, inspect files and update a task tracker, query a lab inventory system, create GitHub issues, or compare travel options. Changing the tool list changes what the agent can do; the loop stays the same.
-
-Here is the loop in plain text:
+Changing the tool list changes what the agent can do; the loop stays the same.
 
 ```text
 while task is not done:
@@ -68,7 +46,7 @@ while task is not done:
         stop and return it
 ```
 
-This is the entire agent pattern. Everything in this project is an implementation of this loop.
+Everything in this project is an implementation of this loop.
 
 ---
 
@@ -105,7 +83,7 @@ Your code sees `final_response` is non-empty, stops the loop, and returns the an
 
 When you run `bash launch mini1` (or `bash launch run`), the benchmark loads your module, finds the `build_agent` function, creates your agent, and calls `run_session(session, runtime)` for each task.
 
-The practical rule: **put all your code inside `run_session`.** The `session` and `runtime` arguments are provided by the benchmark — you don't create them. The class structure and `__init__` are boilerplate required by the runner; don't modify them.
+Put all your code inside `run_session`. The `session` and `runtime` arguments are provided by the benchmark — you don't create them. The class structure and `__init__` are boilerplate required by the runner; don't modify them.
 
 ```python
 class MiniStageAgent(StudentAgent):
@@ -142,11 +120,9 @@ response = runtime.complete(
 print(response.content)   # same text, less nesting
 ```
 
-Two differences:
-- `response.content` instead of `resp.choices[0].message.content` — less nesting
-- `require_json=True` — tells the model it must reply with JSON so your code can parse it
+`response.content` replaces `resp.choices[0].message.content` — less nesting. `require_json=True` constrains the model to reply with JSON so your code can parse it reliably.
 
-**Why not call the OpenAI API directly?** The runtime lets the benchmark swap in different backends without you changing your agent code. With `CLIENT=scripted` it uses a deterministic test client so you can develop without waiting for a real model. The runtime also tracks which events your agent created (needed for grading) and enforces turn limits. In Stage 2 you will use the same `runtime` object to access memory — the interface is consistent across all stages.
+**Why not call the OpenAI API directly?** The runtime lets the benchmark swap in different backends without you changing your agent code. It also tracks which events your agent created (needed for grading) and enforces turn limits. In Stage 2, the same `runtime` object provides access to memory — the interface stays consistent across all stages.
 
 ---
 
@@ -166,7 +142,7 @@ Everything the agent does starts from this string.
 
 ### `runtime` — the interface to everything else
 
-Instead of calling an LLM API directly, you call `runtime`. This is intentional: the benchmark needs to control which model is used, track costs, and enforce turn limits without you changing your agent code. The runtime also provides `CLIENT=scripted` mode, which replaces the real model with a deterministic test client — useful while you are learning the code path.
+Instead of calling an LLM API directly, you call `runtime`. The benchmark controls which model is used, tracks costs, and enforces turn limits — none of that lives in your agent code. The runtime also provides `CLIENT=scripted` mode, which replaces the real model with a deterministic test client.
 
 The calls you will use in every agent:
 
@@ -201,7 +177,7 @@ Note: all arguments to `runtime.complete()` and `runtime.call_tool()` are keywor
 
 ### `messages` — the conversation history
 
-The model has no memory between calls. You maintain it. `messages` is a plain list of dicts that grows as the conversation progresses:
+The model has no memory between calls. You maintain it by passing the full history on every call. `messages` is a plain list of dicts that grows as the conversation progresses:
 
 ```python
 messages = [
@@ -212,7 +188,7 @@ messages = [
 ]
 ```
 
-Every time you call the model, you pass the full `messages` list. This is how the model knows what tools have already been called and what results came back.
+Every call to the model includes the full `messages` list. That's how the model knows what tools have already been called and what results came back.
 
 Two helpers in `common.py` handle the formatting for you:
 
@@ -230,7 +206,7 @@ Before the conversation starts, the model needs instructions: what tools exist, 
 - Default rules from the benchmark (tool descriptions and response format)
 - Your custom rules from `prompts.py`
 
-The rules in `prompts.py` are a **real design choice**. A model given only generic instructions might call tools in the wrong order, skip steps, or use the wrong fields. More specific rules produce more reliable behavior — but rules that are wrong or contradictory can break things too. You will think through this after completing the mini-stages.
+The rules in `prompts.py` are a real design choice. A model given only generic instructions might call tools in the wrong order, skip steps, or use the wrong fields. More specific rules produce more reliable behavior, but rules that are wrong or contradictory break things too. You will work through this tradeoff after the mini-stages.
 
 ---
 
