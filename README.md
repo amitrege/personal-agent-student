@@ -71,6 +71,52 @@ Read `student_scaffold/ARCHITECTURE.md` — it explains what an agent is and wal
 
 ---
 
+## Tools You Have
+
+There are two kinds of tools in this repo.
+
+**Command tools** are the commands you run in the terminal while developing:
+
+| Command | Use it when |
+|---|---|
+| `bash launch help` | You want to see all available commands. |
+| `CLIENT=scripted bash launch doctor` | You want to check that the repo command path works without Colab. |
+| `bash launch doctor` | You want to check that the Colab-backed model is reachable. |
+| `CLIENT=scripted bash launch mini0` | You want to see the agent's available runtime tools and prompt format. |
+| `bash launch grade` | You want a visible grade estimate across Stages 1, 2, and 3. |
+| `bash launch eval` | You want the Stage-1 visible benchmark. |
+| `bash launch eval-debug` | Stage 1 failed and you want to see the failed visible cases. |
+| `bash launch stage2-eval` | You want the Stage-2 visible benchmark. |
+| `bash launch stage2-eval-debug` | Stage 2 failed and you want failed cases plus memory details. |
+| `bash launch stage3-eval` | You want the Stage-3 visible benchmark. |
+| `bash launch stage3-eval-debug` | Stage 3 failed and you want failed cases plus memory details. |
+| `bash launch social` | You want to run the optional social arena after Stage 3 works. |
+
+**Runtime tools** are the tools your agent can ask the benchmark to run:
+
+| Tool | What it does |
+|---|---|
+| `simple_note.search_notes` | Search note titles and bodies. |
+| `simple_note.show_note` | Open one note by `note_id`. |
+| `gmail.show_inbox_threads` | Search email thread subjects and recent message text. |
+| `gmail.show_thread` | Open one email thread by `email_thread_id`. |
+| `calendar.find_free_slots` | Return available start times for the task date and duration. |
+| `calendar.create_event` | Create a calendar event with title, date, start time, duration, and attendees. |
+| `calendar.list_events` | List calendar events, optionally for one date. |
+
+Example: if the user says `Use my SimpleNote note titled 'Monday planning brief' to schedule the meeting`, a good Stage-1 agent usually does this:
+
+1. Search notes with `simple_note.search_notes`, using the note title as the query.
+2. Open the matching note with `simple_note.show_note`.
+3. Read the meeting title, date, duration, attendees, and candidate starts from the note.
+4. Ask the calendar for free slots with `calendar.find_free_slots`.
+5. Create the event with `calendar.create_event`, using the exact fields from the note and one valid free start time.
+6. Return a final response with `runtime.finish(...)`.
+
+You do not hard-code this exact note title or these exact dates. The model chooses tool calls from the current prompt and tool results; your Python loop runs those calls reliably.
+
+---
+
 ## Directory Guide
 
 ```
