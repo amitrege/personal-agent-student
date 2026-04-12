@@ -22,13 +22,14 @@ Stage 3 has a different workflow from Stages 1 and 2. In those stages you could 
 - Your trained model: `stage3_artifacts/` (tracked by git — commit your trained model as part of your submission; TF-IDF and logistic regression models are typically well under 1MB)
 - Your training data: add examples to `training_data/preference_examples.jsonl`, or create a new file and load it from `build_extractor()`
 
-**Running your training script:**
+**Running your training script from the repo root:**
 ```bash
-cd /path/to/course_project
 python -m student_scaffold_stage3.train   # if saved as student_scaffold_stage3/train.py
 # or just:
 python student_scaffold_stage3/train.py
 ```
+
+If your training script or classifier uses extra packages, document how to install them. The grader imports your submitted code, so inference-time dependencies must be available in the grading environment. A standard-library classifier that loads a JSON model from `stage3_artifacts/` avoids that dependency risk.
 
 ---
 

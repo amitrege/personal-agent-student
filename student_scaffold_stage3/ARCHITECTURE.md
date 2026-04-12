@@ -106,6 +106,8 @@ Ask the LLM the question: "Does this message express a morning or afternoon sche
 
 You are not required to use any particular approach. A simpler classifier that is well-tuned and evaluated is better than a complex one used carelessly.
 
+**Dependency note.** The starter framework uses only the Python standard library. If your course setup allows extra packages, you may use them, but your submitted repo must still run in the grading environment. If you add dependencies for training or inference, document them clearly. If you want the safest path, implement a small local classifier that saves a JSON model under `stage3_artifacts/` and loads it with standard-library code.
+
 ---
 
 ## LLM-as-Classifier: Tradeoffs

@@ -35,6 +35,8 @@ Your final Stage 3 agent can enter an arena of simulated users. The arena scores
 
 Open a terminal in this folder before running commands.
 
+Use Python 3.11 or newer. The starter framework uses only the Python standard library, so you do not need to install extra packages before running the mini-stages or visible benchmarks. If you choose to use extra packages for your Stage 3 classifier, make sure your submitted repo documents them and can be run in the grading environment.
+
 ### 1. Run the no-model checks first
 
 These commands use the scripted client, so they do not need Colab yet:
