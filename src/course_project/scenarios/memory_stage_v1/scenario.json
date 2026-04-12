@@ -1,0 +1,238 @@
+{
+  "id": "memory_stage_v1",
+  "description": "Stage-2 scheduling benchmark with cross-session user memory.",
+  "world": "campus_tools",
+  "student_visible": true,
+  "users": {
+    "alex": {
+      "seed_calendar": [
+        {
+          "id": "seed-a1",
+          "title": "Already booked prep",
+          "date": "2026-04-21",
+          "start_time": "12:00",
+          "duration_minutes": 30,
+          "attendees": [
+            "Alex Rivera",
+            "Maya Lopez"
+          ]
+        }
+      ],
+      "seed_notes": [
+        {
+          "note_id": 301,
+          "title": "Partnership planning request",
+          "body": "Meeting title: Partnership planning\nDate: 2026-04-21\nDuration minutes: 30\nAttendees: Alex Rivera, Maya Lopez\nCandidate starts: 09:00, 16:00",
+          "tags": [
+            "planning"
+          ],
+          "updated_at": "2026-04-18T09:00:00"
+        }
+      ],
+      "seed_threads": [
+        {
+          "email_thread_id": 701,
+          "subject": "Research sponsor sync",
+          "participants": [
+            "Alex Rivera",
+            "Jordan Patel"
+          ],
+          "messages": [
+            {
+              "sender": "jordan.patel@campus.edu",
+              "recipients": [
+                "alex.rivera@campus.edu"
+              ],
+              "body": "Meeting title: Research sponsor sync\nDate: 2026-04-22\nDuration minutes: 45\nAttendees: Alex Rivera, Jordan Patel\nCandidate starts: 10:00, 15:30",
+              "sent_at": "2026-04-18T11:00:00"
+            }
+          ],
+          "updated_at": "2026-04-18T11:00:00"
+        }
+      ],
+      "expected_memories": [
+        {
+          "key": "preferred_time_window",
+          "value": "afternoon"
+        }
+      ],
+      "sessions": [
+        {
+          "session_id": "s1",
+          "user_message": "Use my SimpleNote note titled 'Partnership planning request' to schedule the meeting. Also remember that when I have a choice, I prefer afternoon meetings.",
+          "artifact": {
+            "kind": "note",
+            "title": "Partnership planning request"
+          },
+          "task": {
+            "title": "Partnership planning",
+            "date": "2026-04-21",
+            "duration_minutes": 30,
+            "attendees": [
+              "Alex Rivera",
+              "Maya Lopez"
+            ],
+            "candidate_starts": [
+              "09:00",
+              "16:00"
+            ]
+          },
+          "expected": {
+            "event": {
+              "valid_starts": [
+                "09:00",
+                "16:00"
+              ],
+              "preferred_start": "16:00"
+            }
+          }
+        },
+        {
+          "session_id": "s2",
+          "user_message": "Use the Gmail thread 'Research sponsor sync' to schedule the meeting.",
+          "artifact": {
+            "kind": "thread",
+            "title": "Research sponsor sync"
+          },
+          "task": {
+            "title": "Research sponsor sync",
+            "date": "2026-04-22",
+            "duration_minutes": 45,
+            "attendees": [
+              "Alex Rivera",
+              "Jordan Patel"
+            ],
+            "candidate_starts": [
+              "10:00",
+              "15:30"
+            ]
+          },
+          "expected": {
+            "event": {
+              "valid_starts": [
+                "10:00",
+                "15:30"
+              ],
+              "preferred_start": "15:30"
+            }
+          }
+        }
+      ]
+    },
+    "blair": {
+      "seed_calendar": [
+        {
+          "id": "seed-b1",
+          "title": "Studio setup",
+          "date": "2026-04-23",
+          "start_time": "13:00",
+          "duration_minutes": 30,
+          "attendees": [
+            "Blair Chen",
+            "Studio team"
+          ]
+        }
+      ],
+      "seed_notes": [
+        {
+          "note_id": 401,
+          "title": "Scholarship interview prep",
+          "body": "Meeting title: Scholarship interview prep\nDate: 2026-04-23\nDuration minutes: 30\nAttendees: Blair Chen, Priya Shah\nCandidate starts: 09:30, 15:00",
+          "tags": [
+            "students"
+          ],
+          "updated_at": "2026-04-19T09:15:00"
+        }
+      ],
+      "seed_threads": [
+        {
+          "email_thread_id": 801,
+          "subject": "Registrar planning check",
+          "participants": [
+            "Blair Chen",
+            "Registrar office"
+          ],
+          "messages": [
+            {
+              "sender": "registrar@campus.edu",
+              "recipients": [
+                "blair.chen@campus.edu"
+              ],
+              "body": "Meeting title: Registrar planning check\nDate: 2026-04-24\nDuration minutes: 30\nAttendees: Blair Chen, Registrar office\nCandidate starts: 10:30, 16:00",
+              "sent_at": "2026-04-19T12:00:00"
+            }
+          ],
+          "updated_at": "2026-04-19T12:00:00"
+        }
+      ],
+      "expected_memories": [
+        {
+          "key": "preferred_time_window",
+          "value": "morning"
+        }
+      ],
+      "sessions": [
+        {
+          "session_id": "s1",
+          "user_message": "Use my SimpleNote note titled 'Scholarship interview prep' to schedule the meeting. Please remember that I prefer morning meetings when there is a choice.",
+          "artifact": {
+            "kind": "note",
+            "title": "Scholarship interview prep"
+          },
+          "task": {
+            "title": "Scholarship interview prep",
+            "date": "2026-04-23",
+            "duration_minutes": 30,
+            "attendees": [
+              "Blair Chen",
+              "Priya Shah"
+            ],
+            "candidate_starts": [
+              "09:30",
+              "15:00"
+            ]
+          },
+          "expected": {
+            "event": {
+              "valid_starts": [
+                "09:30",
+                "15:00"
+              ],
+              "preferred_start": "09:30"
+            }
+          }
+        },
+        {
+          "session_id": "s2",
+          "user_message": "Use the Gmail thread 'Registrar planning check' to schedule the meeting.",
+          "artifact": {
+            "kind": "thread",
+            "title": "Registrar planning check"
+          },
+          "task": {
+            "title": "Registrar planning check",
+            "date": "2026-04-24",
+            "duration_minutes": 30,
+            "attendees": [
+              "Blair Chen",
+              "Registrar office"
+            ],
+            "candidate_starts": [
+              "10:30",
+              "16:00"
+            ]
+          },
+          "expected": {
+            "event": {
+              "valid_starts": [
+                "10:30",
+                "16:00"
+              ],
+              "preferred_start": "10:30"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

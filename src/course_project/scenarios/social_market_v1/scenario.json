@@ -1,0 +1,498 @@
+{
+  "id": "social_market_v1",
+  "description": "Scheduling-only simulated user market for comparing personalized agents by user satisfaction.",
+  "world": "campus_tools",
+  "student_visible": true,
+  "users": {
+    "eli": {
+      "seed_calendar": [
+        {
+          "id": "seed-e1",
+          "title": "Office hours",
+          "date": "2026-05-18",
+          "start_time": "12:00",
+          "duration_minutes": 30,
+          "attendees": [
+            "Eli Park"
+          ]
+        }
+      ],
+      "seed_notes": [
+        {
+          "note_id": 711,
+          "title": "Robotics prep",
+          "body": "Meeting title: Robotics prep\nDate: 2026-05-18\nDuration minutes: 30\nAttendees: Eli Park, Nia Brooks\nCandidate starts: 09:30, 16:30",
+          "tags": [
+            "robotics"
+          ],
+          "updated_at": "2026-05-01T09:00:00"
+        },
+        {
+          "note_id": 712,
+          "title": "Capstone check-in",
+          "body": "Meeting title: Capstone check-in\nDate: 2026-05-20\nDuration minutes: 30\nAttendees: Eli Park, Omar Singh\nCandidate starts: 09:00, 16:00",
+          "tags": [
+            "capstone"
+          ],
+          "updated_at": "2026-05-01T11:00:00"
+        }
+      ],
+      "seed_threads": [
+        {
+          "email_thread_id": 1211,
+          "subject": "Grant budget review",
+          "participants": [
+            "Eli Park",
+            "Budget team"
+          ],
+          "messages": [
+            {
+              "sender": "budget@campus.edu",
+              "recipients": [
+                "eli.park@campus.edu"
+              ],
+              "body": "Meeting title: Grant budget review\nDate: 2026-05-19\nDuration minutes: 45\nAttendees: Eli Park, Budget team\nCandidate starts: 10:00, 15:00",
+              "sent_at": "2026-05-01T10:30:00"
+            }
+          ],
+          "updated_at": "2026-05-01T10:30:00"
+        }
+      ],
+      "expected_memories": [
+        {
+          "key": "preferred_time_window",
+          "value": "morning"
+        }
+      ],
+      "sessions": [
+        {
+          "session_id": "s1",
+          "user_message": "Use my SimpleNote note titled 'Robotics prep' to schedule the meeting. I do my clearest thinking right at the start of the day.",
+          "artifact": {
+            "kind": "note",
+            "title": "Robotics prep"
+          },
+          "task": {
+            "title": "Robotics prep",
+            "date": "2026-05-18",
+            "duration_minutes": 30,
+            "attendees": [
+              "Eli Park",
+              "Nia Brooks"
+            ],
+            "candidate_starts": [
+              "09:30",
+              "16:30"
+            ]
+          },
+          "expected": {
+            "event": {
+              "valid_starts": [
+                "09:30",
+                "16:30"
+              ],
+              "preferred_start": "09:30"
+            }
+          }
+        },
+        {
+          "session_id": "s2",
+          "user_message": "Use the Gmail thread 'Grant budget review' to schedule the meeting. For this meeting only, later in the day is better for me.",
+          "artifact": {
+            "kind": "thread",
+            "title": "Grant budget review"
+          },
+          "task": {
+            "title": "Grant budget review",
+            "date": "2026-05-19",
+            "duration_minutes": 45,
+            "attendees": [
+              "Eli Park",
+              "Budget team"
+            ],
+            "candidate_starts": [
+              "10:00",
+              "15:00"
+            ]
+          },
+          "expected": {
+            "event": {
+              "valid_starts": [
+                "10:00",
+                "15:00"
+              ],
+              "preferred_start": "15:00"
+            }
+          }
+        },
+        {
+          "session_id": "s3",
+          "user_message": "Please create the calendar event from my SimpleNote note titled 'Capstone check-in'.",
+          "artifact": {
+            "kind": "note",
+            "title": "Capstone check-in"
+          },
+          "task": {
+            "title": "Capstone check-in",
+            "date": "2026-05-20",
+            "duration_minutes": 30,
+            "attendees": [
+              "Eli Park",
+              "Omar Singh"
+            ],
+            "candidate_starts": [
+              "09:00",
+              "16:00"
+            ]
+          },
+          "expected": {
+            "event": {
+              "valid_starts": [
+                "09:00",
+                "16:00"
+              ],
+              "preferred_start": "09:00"
+            }
+          }
+        }
+      ]
+    },
+    "maya": {
+      "seed_calendar": [
+        {
+          "id": "seed-m1",
+          "title": "Advising block",
+          "date": "2026-05-21",
+          "start_time": "12:30",
+          "duration_minutes": 30,
+          "attendees": [
+            "Maya Chen"
+          ]
+        }
+      ],
+      "seed_notes": [
+        {
+          "note_id": 721,
+          "title": "Lab sync",
+          "body": "Meeting title: Lab sync\nDate: 2026-05-21\nDuration minutes: 30\nAttendees: Maya Chen, Priya Rao\nCandidate starts: 09:00, 15:00",
+          "tags": [
+            "lab"
+          ],
+          "updated_at": "2026-05-02T09:00:00"
+        }
+      ],
+      "seed_threads": [
+        {
+          "email_thread_id": 1221,
+          "subject": "Museum planning",
+          "participants": [
+            "Maya Chen",
+            "Museum team"
+          ],
+          "messages": [
+            {
+              "sender": "museum@campus.edu",
+              "recipients": [
+                "maya.chen@campus.edu"
+              ],
+              "body": "Meeting title: Museum planning\nDate: 2026-05-22\nDuration minutes: 45\nAttendees: Maya Chen, Museum team\nCandidate starts: 10:00, 16:00",
+              "sent_at": "2026-05-02T10:30:00"
+            }
+          ],
+          "updated_at": "2026-05-02T10:30:00"
+        }
+      ],
+      "expected_memories": [
+        {
+          "key": "preferred_time_window",
+          "value": "morning"
+        }
+      ],
+      "sessions": [
+        {
+          "session_id": "s1",
+          "user_message": "Use my SimpleNote note titled 'Lab sync' to schedule the meeting. I prefer morning meetings when there is a choice.",
+          "artifact": {
+            "kind": "note",
+            "title": "Lab sync"
+          },
+          "task": {
+            "title": "Lab sync",
+            "date": "2026-05-21",
+            "duration_minutes": 30,
+            "attendees": [
+              "Maya Chen",
+              "Priya Rao"
+            ],
+            "candidate_starts": [
+              "09:00",
+              "15:00"
+            ]
+          },
+          "expected": {
+            "event": {
+              "valid_starts": [
+                "09:00",
+                "15:00"
+              ],
+              "preferred_start": "09:00"
+            }
+          }
+        },
+        {
+          "session_id": "s2",
+          "user_message": "Use the Gmail thread 'Museum planning' to schedule the meeting.",
+          "artifact": {
+            "kind": "thread",
+            "title": "Museum planning"
+          },
+          "task": {
+            "title": "Museum planning",
+            "date": "2026-05-22",
+            "duration_minutes": 45,
+            "attendees": [
+              "Maya Chen",
+              "Museum team"
+            ],
+            "candidate_starts": [
+              "10:00",
+              "16:00"
+            ]
+          },
+          "expected": {
+            "event": {
+              "valid_starts": [
+                "10:00",
+                "16:00"
+              ],
+              "preferred_start": "10:00"
+            }
+          }
+        }
+      ]
+    },
+    "noor": {
+      "seed_calendar": [
+        {
+          "id": "seed-n1",
+          "title": "Team lunch",
+          "date": "2026-05-26",
+          "start_time": "12:00",
+          "duration_minutes": 30,
+          "attendees": [
+            "Noor Patel",
+            "Team"
+          ]
+        }
+      ],
+      "seed_notes": [
+        {
+          "note_id": 731,
+          "title": "Design critique",
+          "body": "Meeting title: Design critique\nDate: 2026-05-26\nDuration minutes: 30\nAttendees: Noor Patel, Lena Ortiz\nCandidate starts: 09:00, 15:30\nScheduling preference: I usually hit my stride after lunch, so pick the later open slot when there is a choice.",
+          "tags": [
+            "design"
+          ],
+          "updated_at": "2026-05-03T09:00:00"
+        }
+      ],
+      "seed_threads": [
+        {
+          "email_thread_id": 1231,
+          "subject": "Accessibility review",
+          "participants": [
+            "Noor Patel",
+            "Access team"
+          ],
+          "messages": [
+            {
+              "sender": "access@campus.edu",
+              "recipients": [
+                "noor.patel@campus.edu"
+              ],
+              "body": "Meeting title: Accessibility review\nDate: 2026-05-27\nDuration minutes: 45\nAttendees: Noor Patel, Access team\nCandidate starts: 10:00, 16:00",
+              "sent_at": "2026-05-03T10:30:00"
+            }
+          ],
+          "updated_at": "2026-05-03T10:30:00"
+        }
+      ],
+      "expected_memories": [
+        {
+          "key": "preferred_time_window",
+          "value": "afternoon"
+        }
+      ],
+      "sessions": [
+        {
+          "session_id": "s1",
+          "user_message": "Use my SimpleNote note titled 'Design critique' to schedule the meeting.",
+          "artifact": {
+            "kind": "note",
+            "title": "Design critique"
+          },
+          "task": {
+            "title": "Design critique",
+            "date": "2026-05-26",
+            "duration_minutes": 30,
+            "attendees": [
+              "Noor Patel",
+              "Lena Ortiz"
+            ],
+            "candidate_starts": [
+              "09:00",
+              "15:30"
+            ]
+          },
+          "expected": {
+            "event": {
+              "valid_starts": [
+                "09:00",
+                "15:30"
+              ],
+              "preferred_start": "15:30"
+            }
+          }
+        },
+        {
+          "session_id": "s2",
+          "user_message": "Use the Gmail thread 'Accessibility review' to schedule the meeting.",
+          "artifact": {
+            "kind": "thread",
+            "title": "Accessibility review"
+          },
+          "task": {
+            "title": "Accessibility review",
+            "date": "2026-05-27",
+            "duration_minutes": 45,
+            "attendees": [
+              "Noor Patel",
+              "Access team"
+            ],
+            "candidate_starts": [
+              "10:00",
+              "16:00"
+            ]
+          },
+          "expected": {
+            "event": {
+              "valid_starts": [
+                "10:00",
+                "16:00"
+              ],
+              "preferred_start": "16:00"
+            }
+          }
+        }
+      ]
+    },
+    "zara": {
+      "seed_calendar": [
+        {
+          "id": "seed-z1",
+          "title": "Morning lab block",
+          "date": "2026-05-28",
+          "start_time": "08:00",
+          "duration_minutes": 30,
+          "attendees": [
+            "Zara Mills"
+          ]
+        }
+      ],
+      "seed_notes": [
+        {
+          "note_id": 741,
+          "title": "Fieldwork plan",
+          "body": "Meeting title: Fieldwork plan\nDate: 2026-05-28\nDuration minutes: 30\nAttendees: Zara Mills, Theo Grant\nCandidate starts: 09:00, 15:00",
+          "tags": [
+            "fieldwork"
+          ],
+          "updated_at": "2026-05-04T09:00:00"
+        }
+      ],
+      "seed_threads": [
+        {
+          "email_thread_id": 1241,
+          "subject": "Archive orientation",
+          "participants": [
+            "Zara Mills",
+            "Archives"
+          ],
+          "messages": [
+            {
+              "sender": "archives@campus.edu",
+              "recipients": [
+                "zara.mills@campus.edu"
+              ],
+              "body": "Meeting title: Archive orientation\nDate: 2026-05-29\nDuration minutes: 30\nAttendees: Zara Mills, Archives\nCandidate starts: 10:00, 16:00",
+              "sent_at": "2026-05-04T10:30:00"
+            }
+          ],
+          "updated_at": "2026-05-04T10:30:00"
+        }
+      ],
+      "expected_memories": [],
+      "sessions": [
+        {
+          "session_id": "s1",
+          "user_message": "Use my SimpleNote note titled 'Fieldwork plan' to schedule the meeting. Mornings are impossible today, so use the later valid slot if there is one.",
+          "artifact": {
+            "kind": "note",
+            "title": "Fieldwork plan"
+          },
+          "task": {
+            "title": "Fieldwork plan",
+            "date": "2026-05-28",
+            "duration_minutes": 30,
+            "attendees": [
+              "Zara Mills",
+              "Theo Grant"
+            ],
+            "candidate_starts": [
+              "09:00",
+              "15:00"
+            ]
+          },
+          "expected": {
+            "event": {
+              "valid_starts": [
+                "09:00",
+                "15:00"
+              ],
+              "preferred_start": "15:00"
+            }
+          }
+        },
+        {
+          "session_id": "s2",
+          "user_message": "Use the Gmail thread 'Archive orientation' to schedule the meeting.",
+          "artifact": {
+            "kind": "thread",
+            "title": "Archive orientation"
+          },
+          "task": {
+            "title": "Archive orientation",
+            "date": "2026-05-29",
+            "duration_minutes": 30,
+            "attendees": [
+              "Zara Mills",
+              "Archives"
+            ],
+            "candidate_starts": [
+              "10:00",
+              "16:00"
+            ]
+          },
+          "expected": {
+            "event": {
+              "valid_starts": [
+                "10:00",
+                "16:00"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,238 @@
+#!/bin/bash
+
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$ROOT"
+
+PYTHON_BIN="${PYTHON_BIN:-python3}"
+if [[ -x "$ROOT/.venv/bin/python3" ]]; then
+  PYTHON_BIN="$ROOT/.venv/bin/python3"
+elif [[ -x "$ROOT/../.venv/bin/python3" ]]; then
+  PYTHON_BIN="$ROOT/../.venv/bin/python3"
+fi
+
+load_env_file() {
+  local path="$1"
+  if [[ -f "$path" ]]; then
+    while IFS= read -r raw_line || [[ -n "$raw_line" ]]; do
+      local line key value
+      line="${raw_line#"${raw_line%%[![:space:]]*}"}"
+      line="${line%"${line##*[![:space:]]}"}"
+      [[ -z "$line" || "$line" == \#* ]] && continue
+      [[ "$line" == export\ * ]] && line="${line#export }"
+      [[ "$line" != *=* ]] && continue
+      key="${line%%=*}"
+      value="${line#*=}"
+      key="${key%"${key##*[![:space:]]}"}"
+      key="${key#"${key%%[![:space:]]*}"}"
+      [[ -z "$key" ]] && continue
+      if [[ -z "${!key+x}" ]]; then
+        value="${value#"${value%%[![:space:]]*}"}"
+        value="${value%"${value##*[![:space:]]}"}"
+        value="${value%\"}"
+        value="${value#\"}"
+        value="${value%\'}"
+        value="${value#\'}"
+        export "$key=$value"
+      fi
+    done < "$path"
+  fi
+}
+
+load_env_file "$ROOT/.env"
+load_env_file "$ROOT/.env.colab"
+
+CLIENT="${CLIENT:-local}"
+SCENARIO="${SCENARIO:-tool_use_stage_v1}"
+SMOKE_USER="${SMOKE_USER:-alex}"
+export CLIENT
+export SCENARIO
+
+usage() {
+  cat <<'EOF'
+Usage:
+  ./launch
+  ./launch doctor
+  ./launch mini0
+  ./launch mini1
+  ./launch mini2
+  ./launch mini3
+  ./launch mini4
+  ./launch mini5
+  ./launch mini6
+  ./launch stage2-mini0
+  ./launch stage2-mini1
+  ./launch stage2-mini2
+  ./launch stage2-mini3
+  ./launch stage2-mini4
+  ./launch stage2-eval
+  ./launch stage3-mini0
+  ./launch stage3-mini1
+  ./launch stage3-mini2
+  ./launch stage3-mini3
+  ./launch stage3-eval
+  ./launch stage3-student-eval
+  ./launch social
+  ./launch eval
+  ./launch grade
+  ./launch run [user_id]
+
+Defaults:
+  No args: validates the local notebook-backed model path, then runs one `tool_use_stage_v1` smoke user.
+  `eval`: runs the full stage-1 visible benchmark.
+EOF
+}
+
+run_doctor() {
+  "$PYTHON_BIN" run.py doctor --client "$CLIENT"
+}
+
+run_smoke() {
+  "$PYTHON_BIN" run.py run --scenario "$SCENARIO" --user "$SMOKE_USER" --client "$CLIENT"
+}
+
+run_eval() {
+  "$PYTHON_BIN" run.py eval --scenario "$SCENARIO" --client "$CLIENT"
+}
+
+run_grade() {
+  "$PYTHON_BIN" run.py grade --client "$CLIENT"
+}
+
+run_stage2_eval() {
+  STUDENT_AGENT_MODULE="${STUDENT_AGENT_MODULE:-student_scaffold_stage2.agent}" SCENARIO="memory_stage_v1" "$PYTHON_BIN" run.py eval --scenario "memory_stage_v1" --client "$CLIENT"
+}
+
+run_stage3_eval() {
+  STUDENT_AGENT_MODULE="${STUDENT_AGENT_MODULE:-student_scaffold_stage3.agent}" SCENARIO="learned_memory_stage_v1" "$PYTHON_BIN" run.py eval --scenario "learned_memory_stage_v1" --client "$CLIENT"
+}
+
+run_social_market() {
+  local agent_modules
+  read -r -a agent_modules <<< "${SOCIAL_AGENT_MODULES:-${SOCIAL_AGENT_MODULE:-student_scaffold_stage3.agent}}"
+  "$PYTHON_BIN" run.py social-market --scenario "social_market_v1" --client "$CLIENT" \
+    --agents "${agent_modules[@]}"
+}
+
+run_user() {
+  local user_id="${1:-$SMOKE_USER}"
+  "$PYTHON_BIN" run.py run --scenario "$SCENARIO" --user "$user_id" --client "$CLIENT"
+}
+
+run_mini() {
+  local module="$1"
+  STUDENT_AGENT_MODULE="$module" "$PYTHON_BIN" run.py run --scenario "$SCENARIO" --user "$SMOKE_USER" --client "$CLIENT"
+}
+
+run_mini_for() {
+  local module="$1"
+  local scenario="$2"
+  local user_id="$3"
+  STUDENT_AGENT_MODULE="$module" "$PYTHON_BIN" run.py run --scenario "$scenario" --user "$user_id" --client "$CLIENT"
+}
+
+case "${1:-smoke}" in
+  smoke)
+    run_doctor
+    run_smoke
+    ;;
+  doctor)
+    run_doctor
+    ;;
+  mini0)
+    run_mini "student_scaffold.mini_0_finish"
+    ;;
+  mini1)
+    run_doctor
+    run_mini "student_scaffold.mini_1_model_call"
+    ;;
+  mini2)
+    run_doctor
+    run_mini "student_scaffold.mini_2_parse_action"
+    ;;
+  mini3)
+    run_doctor
+    run_mini "student_scaffold.mini_3_one_tool"
+    ;;
+  mini4)
+    run_doctor
+    run_mini "student_scaffold.mini_4_one_round_trip"
+    ;;
+  mini5)
+    run_doctor
+    run_mini "student_scaffold.mini_5_simple_loop"
+    ;;
+  mini6)
+    run_doctor
+    run_mini "student_scaffold.mini_6_observe_prompts"
+    ;;
+  stage2-mini0)
+    run_doctor
+    run_mini_for "student_scaffold_stage2.mini_0_observe_memory" "memory_stage_v1" "alex"
+    ;;
+  stage2-mini1)
+    run_doctor
+    run_mini_for "student_scaffold_stage2.mini_1_write_memory" "memory_stage_v1" "alex"
+    ;;
+  stage2-mini2)
+    run_doctor
+    run_mini_for "student_scaffold_stage2.mini_2_read_memory" "memory_stage_v1" "alex"
+    ;;
+  stage2-mini3)
+    run_doctor
+    run_mini_for "student_scaffold_stage2.mini_3_choose_slot" "memory_stage_v1" "alex"
+    ;;
+  stage2-mini4)
+    run_doctor
+    run_mini_for "student_scaffold_stage2.mini_4_memory_loop" "memory_stage_v1" "alex"
+    ;;
+  stage2-eval)
+    run_doctor
+    run_stage2_eval
+    ;;
+  stage3-mini0)
+    run_doctor
+    run_mini_for "student_scaffold_stage3.mini_0_observe_extractor" "learned_memory_stage_v1" "casey"
+    ;;
+  stage3-mini1)
+    run_doctor
+    run_mini_for "student_scaffold_stage3.mini_1_predict_preference" "learned_memory_stage_v1" "casey"
+    ;;
+  stage3-mini2)
+    run_doctor
+    run_mini_for "student_scaffold_stage3.mini_2_write_learned_memory" "learned_memory_stage_v1" "casey"
+    ;;
+  stage3-mini3)
+    run_doctor
+    run_mini_for "student_scaffold_stage3.mini_3_learned_memory_loop" "learned_memory_stage_v1" "casey"
+    ;;
+  stage3-student-eval|stage3-eval)
+    run_doctor
+    run_stage3_eval
+    ;;
+  social)
+    run_doctor
+    run_social_market
+    ;;
+  eval)
+    run_doctor
+    run_eval
+    ;;
+  grade)
+    run_doctor
+    run_grade
+    ;;
+  run)
+    run_doctor
+    run_user "${2:-$SMOKE_USER}"
+    ;;
+  -h|--help|help)
+    usage
+    ;;
+  *)
+    echo "Unknown command: $1" >&2
+    usage >&2
+    exit 1
+    ;;
+esac

@@ -1,0 +1,234 @@
+{
+  "id": "tool_use_stage_v1",
+  "description": "Stage-1 tool-use benchmark with independent note and email scheduling tasks.",
+  "world": "campus_tools",
+  "student_visible": true,
+  "users": {
+    "alex": {
+      "seed_calendar": [
+        {
+          "id": "seed-a1",
+          "title": "Office hours",
+          "date": "2026-04-14",
+          "start_time": "14:00",
+          "duration_minutes": 30,
+          "attendees": [
+            "Alex Rivera",
+            "Student group"
+          ]
+        },
+        {
+          "id": "seed-a2",
+          "title": "Budget prep",
+          "date": "2026-04-15",
+          "start_time": "14:30",
+          "duration_minutes": 45,
+          "attendees": [
+            "Alex Rivera",
+            "Dana Kim"
+          ]
+        }
+      ],
+      "seed_notes": [
+        {
+          "note_id": 101,
+          "title": "Monday planning brief",
+          "body": "Meeting title: Lab planning sync\nDate: 2026-04-14\nDuration minutes: 30\nAttendees: Alex Rivera, Maya Lopez\nCandidate starts: 09:00, 10:00, 14:00",
+          "tags": [
+            "planning"
+          ],
+          "updated_at": "2026-04-10T09:00:00"
+        }
+      ],
+      "seed_threads": [
+        {
+          "email_thread_id": 501,
+          "subject": "Budget review follow-up",
+          "participants": [
+            "Alex Rivera",
+            "Dana Kim"
+          ],
+          "messages": [
+            {
+              "sender": "dana.kim@campus.edu",
+              "recipients": [
+                "alex.rivera@campus.edu"
+              ],
+              "body": "Meeting title: Budget review follow-up\nDate: 2026-04-15\nDuration minutes: 45\nAttendees: Alex Rivera, Dana Kim\nCandidate starts: 14:30, 15:30",
+              "sent_at": "2026-04-11T15:20:00"
+            }
+          ],
+          "updated_at": "2026-04-11T15:20:00"
+        }
+      ],
+      "sessions": [
+        {
+          "session_id": "s1",
+          "user_message": "Use my SimpleNote note titled 'Monday planning brief' to schedule the meeting.",
+          "artifact": {
+            "kind": "note",
+            "title": "Monday planning brief"
+          },
+          "task": {
+            "title": "Lab planning sync",
+            "date": "2026-04-14",
+            "duration_minutes": 30,
+            "attendees": [
+              "Alex Rivera",
+              "Maya Lopez"
+            ],
+            "candidate_starts": [
+              "09:00",
+              "10:00",
+              "14:00"
+            ]
+          },
+          "expected": {
+            "event": {
+              "valid_starts": [
+                "09:00",
+                "10:00"
+              ]
+            }
+          }
+        },
+        {
+          "session_id": "s2",
+          "user_message": "Please use the Gmail thread 'Budget review follow-up' to put the meeting on my calendar.",
+          "artifact": {
+            "kind": "thread",
+            "title": "Budget review follow-up"
+          },
+          "task": {
+            "title": "Budget review follow-up",
+            "date": "2026-04-15",
+            "duration_minutes": 45,
+            "attendees": [
+              "Alex Rivera",
+              "Dana Kim"
+            ],
+            "candidate_starts": [
+              "14:30",
+              "15:30"
+            ]
+          },
+          "expected": {
+            "event": {
+              "valid_starts": [
+                "15:30"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "blair": {
+      "seed_calendar": [
+        {
+          "id": "seed-b1",
+          "title": "TA standup",
+          "date": "2026-04-16",
+          "start_time": "15:00",
+          "duration_minutes": 30,
+          "attendees": [
+            "Blair Chen",
+            "TA team"
+          ]
+        }
+      ],
+      "seed_notes": [
+        {
+          "note_id": 201,
+          "title": "Studio critique prep",
+          "body": "Meeting title: Studio critique\nDate: 2026-04-16\nDuration minutes: 30\nAttendees: Blair Chen, Priya Shah\nCandidate starts: 13:00, 14:00, 15:00",
+          "tags": [
+            "studio"
+          ],
+          "updated_at": "2026-04-12T10:00:00"
+        }
+      ],
+      "seed_threads": [
+        {
+          "email_thread_id": 601,
+          "subject": "Registrar paperwork review",
+          "participants": [
+            "Blair Chen",
+            "Registrar office"
+          ],
+          "messages": [
+            {
+              "sender": "registrar@campus.edu",
+              "recipients": [
+                "blair.chen@campus.edu"
+              ],
+              "body": "Meeting title: Registrar paperwork review\nDate: 2026-04-17\nDuration minutes: 30\nAttendees: Blair Chen, Registrar office\nCandidate starts: 11:30, 16:00",
+              "sent_at": "2026-04-12T13:45:00"
+            }
+          ],
+          "updated_at": "2026-04-12T13:45:00"
+        }
+      ],
+      "sessions": [
+        {
+          "session_id": "s1",
+          "user_message": "Use my SimpleNote note titled 'Studio critique prep' to schedule the meeting.",
+          "artifact": {
+            "kind": "note",
+            "title": "Studio critique prep"
+          },
+          "task": {
+            "title": "Studio critique",
+            "date": "2026-04-16",
+            "duration_minutes": 30,
+            "attendees": [
+              "Blair Chen",
+              "Priya Shah"
+            ],
+            "candidate_starts": [
+              "13:00",
+              "14:00",
+              "15:00"
+            ]
+          },
+          "expected": {
+            "event": {
+              "valid_starts": [
+                "13:00",
+                "14:00"
+              ]
+            }
+          }
+        },
+        {
+          "session_id": "s2",
+          "user_message": "Use the Gmail thread 'Registrar paperwork review' to schedule the meeting.",
+          "artifact": {
+            "kind": "thread",
+            "title": "Registrar paperwork review"
+          },
+          "task": {
+            "title": "Registrar paperwork review",
+            "date": "2026-04-17",
+            "duration_minutes": 30,
+            "attendees": [
+              "Blair Chen",
+              "Registrar office"
+            ],
+            "candidate_starts": [
+              "11:30",
+              "16:00"
+            ]
+          },
+          "expected": {
+            "event": {
+              "valid_starts": [
+                "11:30",
+                "16:00"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,238 @@
+{
+  "id": "learned_memory_stage_v1",
+  "description": "Stage-3 scheduling benchmark where a learned preference extractor writes memory from paraphrased user preferences.",
+  "world": "campus_tools",
+  "student_visible": true,
+  "users": {
+    "casey": {
+      "seed_calendar": [
+        {
+          "id": "seed-c1",
+          "title": "Lab walkthrough",
+          "date": "2026-04-28",
+          "start_time": "13:00",
+          "duration_minutes": 30,
+          "attendees": [
+            "Casey Morgan",
+            "Lab team"
+          ]
+        }
+      ],
+      "seed_notes": [
+        {
+          "note_id": 501,
+          "title": "Grant planning note",
+          "body": "Meeting title: Grant planning\nDate: 2026-04-28\nDuration minutes: 30\nAttendees: Casey Morgan, Dr. Nguyen\nCandidate starts: 09:00, 15:00",
+          "tags": [
+            "grant"
+          ],
+          "updated_at": "2026-04-24T09:00:00"
+        }
+      ],
+      "seed_threads": [
+        {
+          "email_thread_id": 901,
+          "subject": "Equipment review",
+          "participants": [
+            "Casey Morgan",
+            "Samira Ali"
+          ],
+          "messages": [
+            {
+              "sender": "samira.ali@campus.edu",
+              "recipients": [
+                "casey.morgan@campus.edu"
+              ],
+              "body": "Meeting title: Equipment review\nDate: 2026-04-29\nDuration minutes: 45\nAttendees: Casey Morgan, Samira Ali\nCandidate starts: 10:00, 16:00",
+              "sent_at": "2026-04-24T11:30:00"
+            }
+          ],
+          "updated_at": "2026-04-24T11:30:00"
+        }
+      ],
+      "expected_memories": [
+        {
+          "key": "preferred_time_window",
+          "value": "morning"
+        }
+      ],
+      "sessions": [
+        {
+          "session_id": "s1",
+          "user_message": "Use my SimpleNote note titled 'Grant planning note' to schedule the meeting. If there is a choice, I am sharper before lunch.",
+          "artifact": {
+            "kind": "note",
+            "title": "Grant planning note"
+          },
+          "task": {
+            "title": "Grant planning",
+            "date": "2026-04-28",
+            "duration_minutes": 30,
+            "attendees": [
+              "Casey Morgan",
+              "Dr. Nguyen"
+            ],
+            "candidate_starts": [
+              "09:00",
+              "15:00"
+            ]
+          },
+          "expected": {
+            "event": {
+              "valid_starts": [
+                "09:00",
+                "15:00"
+              ],
+              "preferred_start": "09:00"
+            }
+          }
+        },
+        {
+          "session_id": "s2",
+          "user_message": "Use the Gmail thread 'Equipment review' to schedule the meeting.",
+          "artifact": {
+            "kind": "thread",
+            "title": "Equipment review"
+          },
+          "task": {
+            "title": "Equipment review",
+            "date": "2026-04-29",
+            "duration_minutes": 45,
+            "attendees": [
+              "Casey Morgan",
+              "Samira Ali"
+            ],
+            "candidate_starts": [
+              "10:00",
+              "16:00"
+            ]
+          },
+          "expected": {
+            "event": {
+              "valid_starts": [
+                "10:00",
+                "16:00"
+              ],
+              "preferred_start": "10:00"
+            }
+          }
+        }
+      ]
+    },
+    "drew": {
+      "seed_calendar": [
+        {
+          "id": "seed-d1",
+          "title": "Admissions call",
+          "date": "2026-04-30",
+          "start_time": "12:00",
+          "duration_minutes": 30,
+          "attendees": [
+            "Drew Parker",
+            "Admissions"
+          ]
+        }
+      ],
+      "seed_notes": [
+        {
+          "note_id": 601,
+          "title": "Curriculum planning note",
+          "body": "Meeting title: Curriculum planning\nDate: 2026-04-30\nDuration minutes: 30\nAttendees: Drew Parker, Noor Khan\nCandidate starts: 09:30, 15:30",
+          "tags": [
+            "curriculum"
+          ],
+          "updated_at": "2026-04-25T10:00:00"
+        }
+      ],
+      "seed_threads": [
+        {
+          "email_thread_id": 1001,
+          "subject": "Student support sync",
+          "participants": [
+            "Drew Parker",
+            "Noor Khan"
+          ],
+          "messages": [
+            {
+              "sender": "noor.khan@campus.edu",
+              "recipients": [
+                "drew.parker@campus.edu"
+              ],
+              "body": "Meeting title: Student support sync\nDate: 2026-05-01\nDuration minutes: 30\nAttendees: Drew Parker, Noor Khan\nCandidate starts: 10:30, 16:30",
+              "sent_at": "2026-04-25T13:15:00"
+            }
+          ],
+          "updated_at": "2026-04-25T13:15:00"
+        }
+      ],
+      "expected_memories": [
+        {
+          "key": "preferred_time_window",
+          "value": "afternoon"
+        }
+      ],
+      "sessions": [
+        {
+          "session_id": "s1",
+          "user_message": "Use my SimpleNote note titled 'Curriculum planning note' to schedule the meeting. When options are open, I am usually more available in the second half of the day.",
+          "artifact": {
+            "kind": "note",
+            "title": "Curriculum planning note"
+          },
+          "task": {
+            "title": "Curriculum planning",
+            "date": "2026-04-30",
+            "duration_minutes": 30,
+            "attendees": [
+              "Drew Parker",
+              "Noor Khan"
+            ],
+            "candidate_starts": [
+              "09:30",
+              "15:30"
+            ]
+          },
+          "expected": {
+            "event": {
+              "valid_starts": [
+                "09:30",
+                "15:30"
+              ],
+              "preferred_start": "15:30"
+            }
+          }
+        },
+        {
+          "session_id": "s2",
+          "user_message": "Use the Gmail thread 'Student support sync' to schedule the meeting.",
+          "artifact": {
+            "kind": "thread",
+            "title": "Student support sync"
+          },
+          "task": {
+            "title": "Student support sync",
+            "date": "2026-05-01",
+            "duration_minutes": 30,
+            "attendees": [
+              "Drew Parker",
+              "Noor Khan"
+            ],
+            "candidate_starts": [
+              "10:30",
+              "16:30"
+            ]
+          },
+          "expected": {
+            "event": {
+              "valid_starts": [
+                "10:30",
+                "16:30"
+              ],
+              "preferred_start": "16:30"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
