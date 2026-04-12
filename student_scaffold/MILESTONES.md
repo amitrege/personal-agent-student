@@ -12,7 +12,7 @@ It prints the available tools and the full system prompt. Spend a few minutes re
 
 - **"What an Agent Is"** — the loop your code implements: ask the model → run a tool → repeat. Every mini-stage builds one piece of this.
 - **"The Three Main Objects"** — `runtime`, `session`, and `response`. Know what `runtime.complete()`, `runtime.call_tool()`, and `runtime.finish()` do before writing any code.
-- **"The JSON Response Format"** — the model always replies with `{"tool_call": ..., "final_response": ...}`. Your code branches on these two fields throughout.
+- **"What the Model Actually Returns"** — the model always replies with `{"tool_call": ..., "final_response": ...}`. Your code branches on these two fields throughout.
 
 Use `CLIENT=scripted` through mini-stage 5. The scripted client returns deterministic responses so you can learn the code path without waiting for a real model or spending API credits. Switch to the real model for mini-stage 6 and the final agent.
 
@@ -57,10 +57,10 @@ You have the user message and the system prompt. What does the model need before
 <details>
 <summary>Answer</summary>
 
-Both. The system prompt tells the model what tools exist and what format to use. The user message tells it what to do. Without the system prompt the model doesn't know it should respond with JSON or that it has any tools. Without the user message it has nothing to act on. Check the `runtime.complete()` signature in ARCHITECTURE.md under "The Three Main Objects — runtime" for how to pass them.
+Both. The system prompt tells the model what tools exist and what format to use. The user message tells it what to do. Without the system prompt the model doesn't know it should respond with JSON or that it has any tools. Without the user message it has nothing to act on. Check the `runtime.complete()` signature in ARCHITECTURE.md under "The Three Main Objects" for how to pass them.
 </details>
 
-**Your task:** Replace `response = ...` with a call to `runtime.complete`. The signature is in `ARCHITECTURE.md` under "The Three Main Objects — runtime". All arguments are keyword-only.
+**Your task:** Replace `response = ...` with a call to `runtime.complete`. The signature is in `ARCHITECTURE.md` under "The Three Main Objects". All arguments are keyword-only.
 
 **Working when** the output ends with a JSON string containing `tool_call` and `final_response` keys. If you see a Python exception, reread the call signature — keyword-only means you must write `messages=...`, not pass positional arguments.
 

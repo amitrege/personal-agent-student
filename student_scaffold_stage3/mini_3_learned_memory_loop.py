@@ -28,7 +28,7 @@ class MiniStageAgent(StudentAgent):
         # afternoon, write it to preferred_time_window memory. If it is none,
         # do not write memory.
         prediction = self.extractor.predict(session.user_message)  # TODO: improve extractor quality
-        if prediction.label in {"morning", "afternoon"} and prediction.confidence >= 1.0:
+        if prediction.label in {"morning", "afternoon"} and prediction.confidence >= 1.0:  # TODO: replace 1.0 with your calibrated threshold
             runtime.write_memory(
                 key="preferred_time_window",
                 value=prediction.label,

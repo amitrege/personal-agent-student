@@ -34,7 +34,7 @@ class MiniStageAgent(StudentAgent):
         # modify it. If your extractor and memory writes are correct, the
         # loop will automatically use the stored preference when scheduling.
         prediction = self.extractor.predict(session.user_message)  # TODO: improve extractor quality
-        if prediction.label in {"morning", "afternoon"} and prediction.confidence >= 1.0:
+        if prediction.label in {"morning", "afternoon"} and prediction.confidence >= 1.0:  # TODO: replace 1.0 with your calibrated threshold
             runtime.write_memory(
                 key="preferred_time_window",
                 value=prediction.label,

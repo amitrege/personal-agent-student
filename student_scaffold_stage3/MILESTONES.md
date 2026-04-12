@@ -11,7 +11,7 @@ CLIENT=scripted bash launch stage3-mini0
 It shows exactly where the Stage-2 keyword rule fails. Then read these three sections of `ARCHITECTURE.md` before writing any classifier code (about 8 minutes):
 
 - **"Your Task: Build a Preference Classifier"** — defines the three-class problem (`morning` / `afternoon` / `none`), the interface your classifier must satisfy, and the algorithm options.
-- **"Why Not Just Ask the LLM?"** — tradeoffs between a local trained classifier and using the LLM directly. Read this before choosing your approach.
+- **"LLM-as-Classifier: Tradeoffs"** — tradeoffs between a local trained classifier and using the LLM directly. Read this before choosing your approach.
 - **"Training Data Strategy"** — the difference between fitting to the visible diagnostic set and building something that generalizes. This is the most common source of grading surprises in Stage 3.
 
 **Work through the stages in this order:**
@@ -168,6 +168,8 @@ Sort the mini-stage 1 predictions by confidence. Find where correct predictions 
 ```bash
 bash launch stage3-eval
 ```
+
+The Stage 3 grade is `min(suite_score, 100 * preference_accuracy, 100 * memory_accuracy)`. All three must be non-zero — a zero on any one collapses the Stage 3 score to zero regardless of the others.
 
 **Design choices worth thinking through:**
 

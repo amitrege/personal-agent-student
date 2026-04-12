@@ -14,7 +14,7 @@ _TEST_CASES = [
     # Paraphrases — the Stage-2 rule misses these
     ("morning",   "I like to wrap things up before lunch."),
     ("morning",   "I am sharper in the first half of the day."),
-    ("morning",   "Earlier in the day is better for me if there is a choice."),
+    ("morning",   "The first half of the day suits me better for calls."),
     ("afternoon", "The second half of the day works better for me."),
     ("afternoon", "My schedule is usually clear from 2pm onward."),
     ("afternoon", "After lunch tends to be less hectic for me."),

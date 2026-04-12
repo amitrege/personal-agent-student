@@ -174,7 +174,7 @@ Two helpers in `common.py` handle the preference detection:
 extract_direct_time_preference(text) -> str | None
 ```
 
-Looks for direct phrases like "afternoon", "morning", "earlier", "late in the day". Returns `"morning"`, `"afternoon"`, or `None`.
+Looks for direct phrases: `"afternoon"`, `"later"`, `"late in the day"` → `"afternoon"`; `"morning"`, `"earlier"`, `"early in the day"` → `"morning"`. Returns `None` if none match.
 
 ```python
 latest_time_window(memories) -> str | None
@@ -187,6 +187,18 @@ Reads the list returned by `search_memory` and returns the most recent valid pre
 The memories list is ordered oldest-first. `latest_time_window` reads it in reverse and returns the first valid value it finds. This assumes the user's most recent stated preference is the most accurate one — a reasonable default.
 
 It is not the only possible policy. You might instead trust the highest-confidence write, or require two consistent writes before acting on a preference. Each choice trades stability (resisting sparse or noisy signals) against responsiveness (updating quickly when preferences change).
+
+**`build_system_prompt` in Stage 2:**
+
+The Stage-2 version of `build_system_prompt` accepts an optional `memory_rules` list:
+
+```python
+build_system_prompt(runtime, memory_rules=["preferred_time_window=afternoon. Use it only to choose among valid free slots."])
+```
+
+Pass your active-preference hint here so the model sees it in the system prompt. When `memory_rules` is omitted or empty the call behaves identically to Stage 1.
+
+---
 
 **Where to add things in your agent:**
 

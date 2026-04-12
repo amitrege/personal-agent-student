@@ -12,7 +12,7 @@ It shows the current memory mode and the result of a memory search before anythi
 
 - **"You Can Already Schedule a Meeting" and "What the Problem Is"** — the concrete scenario that motivates memory. Read this before writing anything so you understand what gap you're filling.
 - **"The Memory API"** — the exact signatures for `runtime.write_memory()` and `runtime.search_memory()`. Know what `key`, `value`, `evidence`, and `confidence` mean before mini-stage 1.
-- **"Why Python, Not Prompt Rules"** — why you intercept `calendar.create_event` arguments in Python code rather than adding a system prompt rule. This is the central design decision in Stage 2.
+- **"The One Rule About Memory"** and **"Where Memory Fits In The Loop"** — why you intercept `calendar.create_event` arguments in Python code rather than adding a system prompt rule. This is the central design decision in Stage 2.
 
 Use `CLIENT=scripted` for all mini-stages. The memory system works identically with the scripted client and the real model.
 
@@ -184,7 +184,7 @@ The system prompt rule is still useful as a hint to the model (the file adds one
 **Phase A: Get the mechanics working**
 
 ```bash
-STUDENT_AGENT_MODULE=student_scaffold_stage2.agent SCENARIO=memory_stage_v1 CLIENT=scripted bash launch run alex
+CLIENT=scripted STUDENT_AGENT_MODULE=student_scaffold_stage2.agent SCENARIO=memory_stage_v1 bash launch run alex
 ```
 
 The `agent.py` docstring describes the three additions to make. Start by copying your Stage-1 `run_session` into this file, then add the memory pieces using the patterns from the mini-stages:
@@ -200,6 +200,8 @@ Verify end-to-end with `CLIENT=scripted` before switching to the real model.
 CLIENT=scripted bash launch stage2-eval
 ```
 
+The Stage 2 grade is `min(suite_score, 100 * preference_accuracy, 100 * memory_accuracy)`. All three must be non-zero — a zero on any one collapses the Stage 2 score to zero regardless of the others.
+
 Then with the real model:
 
 ```bash
@@ -212,7 +214,7 @@ CLIENT=local bash launch stage2-eval
 
 - **What if the user changes their mind?** `latest_time_window` trusts the most recent write. Is that always right? The Design Extensions in `ARCHITECTURE.md` discuss alternatives.
 
-- **System prompt rule wording.** When `active_preference` is set, add a hint to the system prompt. The exact phrasing affects how reliably the model follows it — try a few versions.
+- **System prompt rule wording.** When `active_preference` is set, add a hint to the system prompt. The exact phrasing affects how reliably the model follows it — try a few versions. Note that `prompts.py` in this stage already contains a set of pre-filled scheduling rules that are always active; your memory hint adds to those at runtime.
 
 **Optional extensions (not required, don't affect Stage 2 score):**
 

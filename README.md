@@ -133,7 +133,7 @@ CLIENT=scripted bash launch stage2-mini1   # write a memory
 CLIENT=scripted bash launch stage2-mini2   # read memory across sessions
 CLIENT=scripted bash launch stage2-mini3   # choose a slot from memory
 CLIENT=scripted bash launch stage2-mini4   # memory inside the tool loop
-STUDENT_AGENT_MODULE=student_scaffold_stage2.agent SCENARIO=memory_stage_v1 bash launch run alex
+CLIENT=scripted STUDENT_AGENT_MODULE=student_scaffold_stage2.agent SCENARIO=memory_stage_v1 bash launch run alex
 bash launch stage2-eval
 bash launch stage2-eval-debug
 ```
@@ -232,7 +232,7 @@ Each stage's `common.py` provides helper functions already imported into the min
 
 | Helper | What it does |
 |--------|-------------|
-| `build_system_prompt(runtime)` | Assembles the full system prompt from benchmark rules + your `EXTRA_RULES` |
+| `build_system_prompt(runtime)` | Assembles the full system prompt from benchmark rules + your `EXTRA_RULES`. In Stages 2 and 3 accepts an optional `memory_rules=` list for runtime hints. |
 | `assistant_message(response)` | Wraps a model response into a messages list entry |
 | `tool_result_message(tool_name, result)` | Wraps a tool result into a messages list entry |
 

@@ -10,7 +10,7 @@ Stage 3 replaces the Stage-2 keyword rule with a trained text classifier that pr
 
 ## How to Use This Document
 
-Run mini-stage 0 first (see MILESTONES.md) to see where Stage 2 fails before reading anything. Then read "Your Task", "Why Not Just Ask the LLM?", and "Training Data Strategy" before writing any classifier code. Read "Where Learning Fits In The Agent" and "The Confidence Field" before implementing `agent.py`. The remaining sections are reference.
+Run mini-stage 0 first (see MILESTONES.md) to see where Stage 2 fails before reading anything. Then read "Your Task: Build a Preference Classifier", "LLM-as-Classifier: Tradeoffs", and "Training Data Strategy" before writing any classifier code. Read "Where Learning Fits In The Agent" and "The Confidence Field" before implementing `agent.py`. The remaining sections are reference.
 
 ---
 
@@ -41,7 +41,7 @@ A user who says "I prefer afternoon meetings" matches. But consider:
 
 None of these phrases appear in the rule. `extract_direct_time_preference` returns `None` for all three. The preference is never written. The agent treats the user as if they had no preference at all, even though the intent is clear. Keyword matching works for phrases it was written to catch and fails silently on everything else.
 
-Run `bash launch stage3-mini0` to see exactly where the rule fails before building your classifier.
+Run `CLIENT=scripted bash launch stage3-mini0` to see exactly where the rule fails before building your classifier.
 
 ---
 
@@ -87,7 +87,7 @@ TF-IDF down-weights common words and gives more signal to distinctive terms. Log
 Word embeddings (e.g., from a sentence transformer) capture semantic similarity, so "before lunch" and "morning" will have similar representations. Much better generalization. Higher complexity to implement and requires either a pre-trained model or more training data.
 
 **LLM-as-classifier (prompt-based)**
-Ask the LLM the question: "Does this message express a morning or afternoon scheduling preference?" This generalizes extremely well. See "Why Not Just Ask the LLM?" for why this is sometimes the wrong choice.
+Ask the LLM the question: "Does this message express a morning or afternoon scheduling preference?" This generalizes extremely well. See "LLM-as-Classifier: Tradeoffs" below for why this is sometimes the wrong choice.
 
 A simpler classifier that is well-tuned and evaluated is better than a complex one used carelessly.
 
