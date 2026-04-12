@@ -79,42 +79,48 @@ class StudentRuntime:
         user_id: str,
         session: dict[str, Any],
     ) -> None:
-        self._scenario = scenario
-        self._world = world
-        self._model_client = model_client
-        self._settings = settings
-        self._user_id = user_id
+        self.__world = world
+        self.__model_client = model_client
+        self.__settings = settings
         self.session = StudentSession(
             scenario_id=scenario["id"],
             user_id=user_id,
             session_id=session["session_id"],
             user_message=session["user_message"],
         )
-        self._trace_events: list[dict[str, Any]] = []
-        self._tool_calls: list[dict[str, Any]] = []
-        self._created_event_ids: list[str] = []
+        self.__trace_events: list[dict[str, Any]] = []
+        self.__tool_calls: list[dict[str, Any]] = []
+        self.__created_event_ids: list[str] = []
+
+    @property
+    def _scenario(self) -> None:
+        raise AttributeError("runtime._scenario is not part of the student API.")
+
+    @property
+    def _world(self) -> None:
+        raise AttributeError("runtime._world is not part of the student API.")
 
     @property
     def max_model_turns(self) -> int:
-        return self._settings.max_model_turns
+        return self.__settings.max_model_turns
 
     @property
     def max_tool_calls(self) -> int:
-        return self._settings.max_tool_calls
+        return self.__settings.max_tool_calls
 
     @property
     def compact_local_prompt(self) -> bool:
-        return self._settings.compact_local_prompt
+        return self.__settings.compact_local_prompt
 
     @property
     def memory_mode(self) -> str:
-        return self._settings.memory_mode
+        return self.__settings.memory_mode
 
     def list_tools(self) -> list[ToolSpec]:
-        return self._world.list_tools()
+        return self.__world.list_tools()
 
     def prompt_rules(self) -> list[str]:
-        return self._world.prompt_rules()
+        return self.__world.prompt_rules()
 
     def complete(
         self,
@@ -123,7 +129,7 @@ class StudentRuntime:
         require_json: bool = True,
         temperature: float = 0.0,
     ) -> Any:
-        return self._model_client.complete(
+        return self.__model_client.complete(
             messages=messages,
             require_json=require_json,
             temperature=temperature,
@@ -132,7 +138,7 @@ class StudentRuntime:
     def record_event(self, event_type: str, payload: dict[str, Any]) -> None:
         event = {"type": event_type, "session_id": self.session.session_id}
         event.update(payload)
-        self._trace_events.append(event)
+        self.__trace_events.append(event)
 
     def write_memory(
         self,
@@ -142,7 +148,7 @@ class StudentRuntime:
         evidence: str = "",
         confidence: float = 1.0,
     ) -> dict[str, Any]:
-        if self._settings.memory_mode == "no_memory":
+        if self.__settings.memory_mode == "no_memory":
             payload = {
                 "stored": False,
                 "reason": "memory_mode=no_memory",
@@ -151,7 +157,7 @@ class StudentRuntime:
             }
             self.record_event("memory_write_skipped", payload)
             return payload
-        write_memory = getattr(self._world, "write_memory", None)
+        write_memory = getattr(self.__world, "write_memory", None)
         if write_memory is None:
             payload = {
                 "stored": False,
@@ -171,17 +177,17 @@ class StudentRuntime:
         return item
 
     def search_memory(self, *, key: str | None = None, query: str = "") -> list[dict[str, Any]]:
-        if self._settings.memory_mode in {"no_memory", "profile_blind"}:
+        if self.__settings.memory_mode in {"no_memory", "profile_blind"}:
             self.record_event(
                 "memory_search_hidden",
                 {
                     "key": key,
                     "query": query,
-                    "memory_mode": self._settings.memory_mode,
+                    "memory_mode": self.__settings.memory_mode,
                 },
             )
             return []
-        search_memory = getattr(self._world, "search_memory", None)
+        search_memory = getattr(self.__world, "search_memory", None)
         if search_memory is None:
             self.record_event("memory_search_empty", {"key": key, "query": query})
             return []
@@ -203,18 +209,18 @@ class StudentRuntime:
         arguments: dict[str, Any],
         turn_index: int | None = None,
     ) -> tuple[str, dict[str, Any], Any]:
-        if len(self._tool_calls) >= self._settings.max_tool_calls:
+        if len(self.__tool_calls) >= self.__settings.max_tool_calls:
             raise RuntimeError(f"Tool call cap exceeded in session {self.session.session_id}")
-        resolved_tool_name = resolve_tool_name(self._world, tool_name)
-        result = self._world.call_tool(resolved_tool_name, arguments)
-        self._tool_calls.append(
+        resolved_tool_name = resolve_tool_name(self.__world, tool_name)
+        result = self.__world.call_tool(resolved_tool_name, arguments)
+        self.__tool_calls.append(
             {
                 "name": resolved_tool_name,
                 "arguments": arguments,
                 "result": result,
             }
         )
-        self._trace_events.append(
+        self.__trace_events.append(
             {
                 "type": "tool_call",
                 "session_id": self.session.session_id,
@@ -225,14 +231,14 @@ class StudentRuntime:
             }
         )
         if resolved_tool_name == "calendar.create_event" and isinstance(result, dict) and "id" in result:
-            self._created_event_ids.append(result["id"])
+            self.__created_event_ids.append(result["id"])
         return resolved_tool_name, arguments, result
 
     def default_final_response(self) -> str:
-        return fallback_final_response(self._tool_calls)
+        return fallback_final_response(self.__tool_calls)
 
     def finish(self, final_response: str) -> SessionResult:
-        self._trace_events.append(
+        self.__trace_events.append(
             {
                 "type": "session_complete",
                 "session_id": self.session.session_id,
@@ -241,7 +247,7 @@ class StudentRuntime:
         )
         return SessionResult(
             final_response=final_response,
-            tool_calls=list(self._tool_calls),
-            created_event_ids=list(self._created_event_ids),
-            trace_events=list(self._trace_events),
+            tool_calls=list(self.__tool_calls),
+            created_event_ids=list(self.__created_event_ids),
+            trace_events=list(self.__trace_events),
         )

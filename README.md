@@ -195,6 +195,8 @@ Your loop executes whatever tool the model requests. Do not hard-code note title
 
 ### Grading
 
+**Visible benchmark (run locally anytime):**
+
 ```bash
 bash launch grade
 ```
@@ -216,6 +218,16 @@ bash launch eval-debug
 bash launch stage2-eval-debug
 bash launch stage3-eval-debug
 ```
+
+**Hidden benchmark (runs automatically on GitHub Classroom):**
+
+Every time you push to your GitHub Classroom repo, the hidden grading suite runs against test cases you cannot see. The hidden grader posts a compact commit status named `personal-agent/hidden-scripted`, with a score like `hidden 82.5/100; S1 40.0/40 S2 20.0/25 S3 22.5/35`. It can take a few minutes after a push; check the latest commit's status/checks on GitHub rather than refreshing the local terminal.
+
+The hidden benchmark uses `CLIENT=scripted` (no Colab needed), so it runs even if your Colab session is not active. It tests whether your implementation is structurally correct and generalizes to new inputs. Use the visible benchmark with your real model to tune prompts; use the hidden score to check generalization.
+
+**Allowed benchmark use:**
+
+You may inspect the visible scenario files below to understand the task and debug your agent. Do not write code that reads hidden tests, grader artifacts, private runtime attributes, environment variables, or files outside your repository to infer expected answers. Your agent should solve each session from the public `session` fields, `runtime` tools, memory, your model calls, and your learned component.
 
 ---
 
