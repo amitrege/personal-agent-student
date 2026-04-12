@@ -233,6 +233,8 @@ These are not required and do not affect your Stage 3 score, but they are worth 
 
 **Make a general scheduling agent.** The current agent only handles meeting scheduling. You could extend it to handle other types of calendar requests (reminders, recurring events, cancellations) by adding new tools and prompt rules. The agent loop itself does not need to change — tool generality comes from the tools you define and the rules you add.
 
+**Swap in a different tool set.** The same scaffold can support agents outside scheduling. For example, replace the notes/email/calendar tools with course-LMS tools, a task tracker, a code repository API, a document search tool, or a lab inventory database. The agent loop remains: choose a tool call, execute it, return the result to the model, and repeat until the task is done. The main design work is deciding which tool outputs are trusted, which actions need deterministic checks, and how the benchmark should score success.
+
 ---
 
 ## Optional Next Step: Social Arena

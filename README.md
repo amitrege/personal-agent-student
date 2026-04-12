@@ -2,6 +2,8 @@
 
 You are building a personalized scheduling assistant. By the end of the project you will have an agent that can read a user's notes and emails, create calendar events, remember each user's scheduling preferences across conversations, and apply those preferences using a classifier you trained yourself.
 
+This project is a scheduling-specific version of a more general tool-using agent scaffold. The same loop you build here — ask a model what to do next, run the requested tool, feed the result back, and stop when the task is complete — could be reused with many other tools. For example, a similar agent could search a course LMS, update a task tracker, query a lab inventory system, summarize files, create GitHub issues, or coordinate travel bookings. We focus on notes, email, memory, and calendar tools so the course project has a concrete task and a measurable benchmark, but extending the scaffold to new tools is a natural next project.
+
 ---
 
 ## What You Are Building
@@ -70,7 +72,7 @@ Read `student_scaffold/ARCHITECTURE.md` — it explains what an agent is and wal
 ## Directory Guide
 
 ```
-course_project/
+.
 ├── student_scaffold/          ← Stage 1: your files
 │   ├── ARCHITECTURE.md        ←   start here for Stage 1
 │   ├── MILESTONES.md          ←   step-by-step coding guide

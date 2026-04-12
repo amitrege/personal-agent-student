@@ -53,6 +53,8 @@ An agent is a loop. Instead of calling the model once and returning an answer, y
 
 The model acts as the *brain* — it decides which tool to call and what arguments to pass. Your Python code is the *hands* — it actually runs the tools and feeds results back. Neither can complete the task alone.
 
+This pattern is not specific to scheduling. In this project the tools happen to be notes, email, and calendar because those make the benchmark concrete. The same scaffold could support different tool sets: search course materials and draft LMS messages, inspect files and update a task tracker, query a lab inventory system, create GitHub issues, or compare travel options. Changing the tool list changes what the agent can do; the loop stays the same.
+
 Here is the loop in plain text:
 
 ```text
