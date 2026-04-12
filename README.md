@@ -152,6 +152,16 @@ visible_grade = 0.40 * stage1_grade_score + 0.25 * stage2_grade_score + 0.35 * s
 
 Equivalently, Stage 1 is worth 40 points, Stage 2 is worth 25 points, and Stage 3 is worth 35 points. For Stage 1, `grade_score` is the visible `suite_score`. For Stages 2 and 3, `grade_score` also requires the stage-specific memory and preference metrics: it is `min(suite_score, 100 * preference_accuracy, 100 * memory_accuracy)`. This means Stage 2 earns 0 grade points until you implement memory, even if a Stage-1-style loop can still schedule some events. It also means Stage 3 earns 0 grade points until you implement the learned memory component, even if the starter Stage 3 scaffold can still schedule some events.
 
+When an eval score is lower than expected, rerun the debug version to see the visible cases that failed:
+
+```bash
+bash launch eval-debug
+bash launch stage2-eval-debug
+bash launch stage3-eval-debug
+```
+
+The debug output includes each failed session's user message, referenced artifact, expected event fields, actual `calendar.create_event` result if any, tool sequence, run directory, and expected/stored memory entries when memory is part of the stage. It is a debugging view of the visible benchmark only; hidden grading cases are still not distributed.
+
 ---
 
 ## Stage 1 Commands

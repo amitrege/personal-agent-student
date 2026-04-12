@@ -55,6 +55,16 @@ def _build_parser() -> argparse.ArgumentParser:
     evaluate = subparsers.add_parser("eval", help="Evaluate all users in a scenario")
     evaluate.add_argument("--scenario", default="tool_use_stage_v1", choices=available_scenarios())
     evaluate.add_argument("--client", default="local", choices=("local", "scripted"))
+    evaluate.add_argument(
+        "--show-cases",
+        action="store_true",
+        help="Include prompt, expected event, actual event, and tool sequence for every case.",
+    )
+    evaluate.add_argument(
+        "--show-failures",
+        action="store_true",
+        help="Include prompt, expected event, actual event, and tool sequence for failed cases only.",
+    )
 
     grade = subparsers.add_parser("grade", help="Estimate visible project grade across stages")
     grade.add_argument("--client", default="local", choices=("local", "scripted"))
@@ -126,8 +136,128 @@ def _cmd_eval(args: argparse.Namespace) -> int:
             model_client=client,
         )
     summary = evaluate_results(scenario, results)
+    if args.show_cases or args.show_failures:
+        summary["case_details"] = _case_details(
+            scenario=scenario,
+            results=results,
+            failures_only=bool(args.show_failures),
+        )
+        memory_details = _memory_details(
+            scenario=scenario,
+            results=results,
+            failures_only=bool(args.show_failures),
+        )
+        if memory_details:
+            summary["memory_details"] = memory_details
     print(json.dumps(summary, indent=2))
     return 0
+
+
+def _case_details(
+    *,
+    scenario: dict[str, Any],
+    results: dict[str, dict[str, Any]],
+    failures_only: bool,
+) -> list[dict[str, Any]]:
+    details: list[dict[str, Any]] = []
+    for user_id in sorted(scenario["users"]):
+        user = scenario["users"][user_id]
+        result = results[user_id]
+        score_sessions = result["score"].get("sessions", {})
+        run_sessions = {item["session_id"]: item for item in result.get("sessions", [])}
+        for session in user["sessions"]:
+            session_id = session["session_id"]
+            checks = dict(score_sessions.get(session_id, {}))
+            failed = not _session_passed(checks)
+            if failures_only and not failed:
+                continue
+            run_session = run_sessions.get(session_id, {})
+            tool_calls = list(run_session.get("tool_calls", []))
+            details.append(
+                {
+                    "user_id": user_id,
+                    "session_id": session_id,
+                    "failed": failed,
+                    "user_message": session.get("user_message", ""),
+                    "artifact": session.get("artifact", {}),
+                    "expected_event": _expected_event(session),
+                    "actual_event": _last_created_event(tool_calls),
+                    "create_event_results": _create_event_results(tool_calls),
+                    "checks": checks,
+                    "tool_sequence": [str(call.get("name", "")) for call in tool_calls],
+                    "final_response": run_session.get("final_response", ""),
+                    "run_dir": result.get("run_dir", ""),
+                }
+            )
+    return details
+
+
+def _session_passed(checks: dict[str, Any]) -> bool:
+    if checks.get("correct_event") is not True:
+        return False
+    if checks.get("read_artifact") is not True:
+        return False
+    if checks.get("preferred_start") and checks.get("preferred_start_correct") is not True:
+        return False
+    return True
+
+
+def _expected_event(session: dict[str, Any]) -> dict[str, Any]:
+    task = dict(session.get("task", {}))
+    expected = dict(session.get("expected", {}).get("event", {}))
+    return {
+        "title": task.get("title"),
+        "date": task.get("date"),
+        "duration_minutes": task.get("duration_minutes"),
+        "attendees": task.get("attendees", []),
+        "valid_starts": expected.get("valid_starts", []),
+        "preferred_start": expected.get("preferred_start"),
+    }
+
+
+def _create_event_results(tool_calls: list[dict[str, Any]]) -> list[Any]:
+    return [
+        call.get("result")
+        for call in tool_calls
+        if call.get("name") == "calendar.create_event"
+    ]
+
+
+def _last_created_event(tool_calls: list[dict[str, Any]]) -> Any:
+    for result in reversed(_create_event_results(tool_calls)):
+        if isinstance(result, dict) and "id" in result:
+            return result
+    return None
+
+
+def _memory_details(
+    *,
+    scenario: dict[str, Any],
+    results: dict[str, dict[str, Any]],
+    failures_only: bool,
+) -> list[dict[str, Any]]:
+    details: list[dict[str, Any]] = []
+    for user_id in sorted(scenario["users"]):
+        user = scenario["users"][user_id]
+        expected_memories = list(user.get("expected_memories", []))
+        if not expected_memories:
+            continue
+        memory = dict(results[user_id]["score"].get("memory", {}))
+        expected_count = int(memory.get("expected_count", len(expected_memories)))
+        correct_count = int(memory.get("correct_count", 0))
+        failed = correct_count < expected_count
+        if failures_only and not failed:
+            continue
+        details.append(
+            {
+                "user_id": user_id,
+                "failed": failed,
+                "expected_memories": expected_memories,
+                "memory_results": memory.get("results", []),
+                "stored_memories": memory.get("stored", []),
+            }
+        )
+    return details
 
 
 def _stage_grade_score(stage_id: str, summary: dict[str, Any]) -> float:

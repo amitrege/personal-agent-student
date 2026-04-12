@@ -67,14 +67,17 @@ Usage:
   ./launch stage2-mini3
   ./launch stage2-mini4
   ./launch stage2-eval
+  ./launch stage2-eval-debug
   ./launch stage3-mini0
   ./launch stage3-mini1
   ./launch stage3-mini2
   ./launch stage3-mini3
   ./launch stage3-eval
+  ./launch stage3-eval-debug
   ./launch stage3-student-eval
   ./launch social
   ./launch eval
+  ./launch eval-debug
   ./launch grade
   ./launch run [user_id]
 
@@ -96,6 +99,10 @@ run_eval() {
   "$PYTHON_BIN" run.py eval --scenario "$SCENARIO" --client "$CLIENT"
 }
 
+run_eval_debug() {
+  "$PYTHON_BIN" run.py eval --scenario "$SCENARIO" --client "$CLIENT" --show-failures
+}
+
 run_grade() {
   "$PYTHON_BIN" run.py grade --client "$CLIENT"
 }
@@ -104,8 +111,16 @@ run_stage2_eval() {
   STUDENT_AGENT_MODULE="${STUDENT_AGENT_MODULE:-student_scaffold_stage2.agent}" SCENARIO="memory_stage_v1" "$PYTHON_BIN" run.py eval --scenario "memory_stage_v1" --client "$CLIENT"
 }
 
+run_stage2_eval_debug() {
+  STUDENT_AGENT_MODULE="${STUDENT_AGENT_MODULE:-student_scaffold_stage2.agent}" SCENARIO="memory_stage_v1" "$PYTHON_BIN" run.py eval --scenario "memory_stage_v1" --client "$CLIENT" --show-failures
+}
+
 run_stage3_eval() {
   STUDENT_AGENT_MODULE="${STUDENT_AGENT_MODULE:-student_scaffold_stage3.agent}" SCENARIO="learned_memory_stage_v1" "$PYTHON_BIN" run.py eval --scenario "learned_memory_stage_v1" --client "$CLIENT"
+}
+
+run_stage3_eval_debug() {
+  STUDENT_AGENT_MODULE="${STUDENT_AGENT_MODULE:-student_scaffold_stage3.agent}" SCENARIO="learned_memory_stage_v1" "$PYTHON_BIN" run.py eval --scenario "learned_memory_stage_v1" --client "$CLIENT" --show-failures
 }
 
 run_social_market() {
@@ -191,6 +206,10 @@ case "${1:-smoke}" in
     run_doctor
     run_stage2_eval
     ;;
+  stage2-eval-debug)
+    run_doctor
+    run_stage2_eval_debug
+    ;;
   stage3-mini0)
     run_doctor
     run_mini_for "student_scaffold_stage3.mini_0_observe_extractor" "learned_memory_stage_v1" "casey"
@@ -211,6 +230,10 @@ case "${1:-smoke}" in
     run_doctor
     run_stage3_eval
     ;;
+  stage3-eval-debug)
+    run_doctor
+    run_stage3_eval_debug
+    ;;
   social)
     run_doctor
     run_social_market
@@ -218,6 +241,10 @@ case "${1:-smoke}" in
   eval)
     run_doctor
     run_eval
+    ;;
+  eval-debug)
+    run_doctor
+    run_eval_debug
     ;;
   grade)
     run_doctor
