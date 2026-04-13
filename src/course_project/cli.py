@@ -240,10 +240,11 @@ def _memory_details(
     for user_id in sorted(scenario["users"]):
         user = scenario["users"][user_id]
         expected_memories = list(user.get("expected_memories", []))
-        if not expected_memories:
+        forbidden_memories = list(user.get("forbidden_memories", []))
+        if not expected_memories and not forbidden_memories:
             continue
         memory = dict(results[user_id]["score"].get("memory", {}))
-        expected_count = int(memory.get("expected_count", len(expected_memories)))
+        expected_count = int(memory.get("expected_count", len(expected_memories) + len(forbidden_memories)))
         correct_count = int(memory.get("correct_count", 0))
         failed = correct_count < expected_count
         if failures_only and not failed:
@@ -253,6 +254,7 @@ def _memory_details(
                 "user_id": user_id,
                 "failed": failed,
                 "expected_memories": expected_memories,
+                "forbidden_memories": forbidden_memories,
                 "memory_results": memory.get("results", []),
                 "stored_memories": memory.get("stored", []),
             }

@@ -518,6 +518,11 @@ class CampusToolsWorld:
             for item in self.user.get("expected_memories", [])
             if isinstance(item, dict)
         ]
+        forbidden = [
+            item
+            for item in self.user.get("forbidden_memories", [])
+            if isinstance(item, dict)
+        ]
         results: list[dict[str, Any]] = []
         correct_count = 0
         for item in expected:
@@ -529,9 +534,20 @@ class CampusToolsWorld:
             )
             if matched:
                 correct_count += 1
-            results.append({"key": key, "value": value, "matched": matched})
+            results.append({"type": "expected", "key": key, "value": value, "matched": matched})
+        for item in forbidden:
+            key = str(item.get("key", "")).strip()
+            value = str(item.get("value", "")).strip()
+            matched = any(
+                memory.get("key") == key
+                and (not value or str(memory.get("value", "")).strip() == value)
+                for memory in self.memories
+            )
+            if not matched:
+                correct_count += 1
+            results.append({"type": "forbidden", "key": key, "value": value, "matched": not matched})
         return {
-            "expected_count": len(expected),
+            "expected_count": len(expected) + len(forbidden),
             "correct_count": correct_count,
             "results": results,
             "stored": list(self.memories),
