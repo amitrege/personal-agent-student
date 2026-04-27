@@ -6,7 +6,9 @@
 >
 > That link creates your own private copy of the repo where your work is saved and graded. If you clone this repo instead, your submissions will not be received and you will not get a grade.
 >
-> **Already cloned and started working?** Accept the invite link above, then copy your changed files (`student_scaffold/`, `student_scaffold_stage2/`, `student_scaffold_stage3/`, `training_data/`, `stage3_artifacts/`) into your new classroom repo.
+> **If GitHub Classroom shows a 500 error, a 404 page, or no repo is created:** do not use a guessed `/invitations` URL. That URL only works after a private repo already exists, and some repo names get suffixes like `-1` or `-2`. Email the instructor your GitHub username and, if you already started in a fork/private repo, that repo URL. Course staff will create or repair your private repo and send the correct invitation.
+>
+> **Already cloned and started working?** Accept the assignment link above if it works. If it does not, wait for the staff-created recovery repo, then copy your changed files (`student_scaffold/`, `student_scaffold_stage2/`, `student_scaffold_stage3/`, `training_data/`, `stage3_artifacts/`) into that repo.
 
 ---
 
