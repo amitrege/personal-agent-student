@@ -221,9 +221,9 @@ bash launch stage2-eval-debug
 bash launch stage3-eval-debug
 ```
 
-**Hidden benchmark (runs automatically on GitHub Classroom):**
+**Hidden benchmark (posted automatically from the course grader):**
 
-Every time you push to your GitHub Classroom repo, the hidden grading suite runs against test cases you cannot see. The hidden grader posts a compact commit status named `personal-agent/hidden-scripted`, with a score like `hidden 82.5/100; S1 40.0/40 S2 20.0/25 S3 22.5/35`. It can take a few minutes after a push; check the latest commit's status/checks on GitHub rather than refreshing the local terminal.
+After you push to your GitHub Classroom repo, the course's private grader periodically checks new commits and runs the hidden grading suite against test cases you cannot see. Your repo's **Actions** tab may say no workflows are configured; that is normal, because the hidden grader runs from the instructor repo, not from your repo. The hidden grader posts a compact commit status named `personal-agent/hidden-scripted`, with a score like `hidden 82.5/100; S1 40.0/40 S2 20.0/25 S3 22.5/35`. It can take several minutes after a push; check the latest commit's status/checks on GitHub rather than refreshing the local terminal.
 
 The hidden benchmark uses `CLIENT=scripted` (no Colab needed), so it runs even if your Colab session is not active. It tests whether your implementation is structurally correct and generalizes to new inputs. Use the visible benchmark with your real model to tune prompts; use the hidden score to check generalization.
 
