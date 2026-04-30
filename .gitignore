@@ -2,6 +2,7 @@
 .env
 .env.colab
 .venv/
+.venv-hidden-feedback/
 __pycache__/
 *.py[cod]
 .pytest_cache/
