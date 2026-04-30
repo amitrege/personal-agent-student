@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>edu.colorado.csci4622.personal-agent-hidden-feedback</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>/Users/amit/dev-work/personal-agent/course_project/personal-agent-instructor/scripts/run_classroom_hidden_feedback_local.sh</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/amit/dev-work/personal-agent/course_project/personal-agent-instructor</string>
+
+  <key>StartInterval</key>
+  <integer>600</integer>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <key>StandardOutPath</key>
+  <string>/tmp/personal-agent-hidden-feedback.out.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>/tmp/personal-agent-hidden-feedback.err.log</string>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/usr/local/opt/python/libexec/bin:/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+</dict>
+</plist>
